@@ -6,12 +6,15 @@
  * om de client aan te maken gebruik Client client = new Client();
  * daarna client.run();
  */
+package tictactoeclient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.InputMismatchException;
+import java.util.Scanner;
 
 public class Client implements Runnable {
 
@@ -23,38 +26,114 @@ public class Client implements Runnable {
     private PrintWriter out; // aanmaken van output writer
     private boolean done; // boolean voor het bewaren of we klaar zijn (voor disconnect)
 
+    private String currentPlayer; // houdt de huidige speler bij
 
     @Override
-    public void run()
-    {
+    public void run() {
         try {
-            client = new Socket(hostName, portNumber); // we maken een nieuwe Socket genaamd client op de hostname en portname van de server later moet de hostname en port uit args[0] en args[1] gepakt worden zodat we kunnen verbinden met de toeirnooi server
+            client = new Socket(hostName, portNumber);
             out = new PrintWriter(client.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-            InputHandler inputHandler = new InputHandler(); // we maken een InputHander aan, deze is hier beneden gemaakt staat niet in aparte classe
-            Thread thread = new Thread(inputHandler); // we zetten de inputhandler op een apparte thread
-            thread.start(); //we starten de thread, gebruik nooit run(); dat start geen apparte thread
+            InputHandler inputHandler = new InputHandler();
+            Thread thread = new Thread(inputHandler);
+            thread.start();
 
-            String inputMessage; // we maken een input message aan
-            while((inputMessage = in.readLine()) != null) { // het moet in een loop zodat we input kunnen blijven verwerken
+            String inputMessage;
+            while ((inputMessage = in.readLine()) != null) {
                 System.out.println(inputMessage);
+
+                if (inputMessage.startsWith("SVR GAME MATCH")) {
+                    System.out.println("Nu bezig met een match!");
+                    // logica om huidige speler bij te houden
+                    String[] parts = inputMessage.split(" ");
+                    currentPlayer = parts[5].replace("\"", ""); // Haal de speler uit de berichttekst
+                } else if (inputMessage.startsWith("SVR GAME MOVE")) {
+                    // Verwerkt een zetbericht
+                    processMoveResult(inputMessage);
+                } else if (inputMessage.startsWith("SVR GAME")) {
+                    // Verwerkt een resultaatbericht van de match
+                    processMatchResult(inputMessage);
+                } else if (inputMessage.startsWith("SVR GAME CHALLENGE")) {
+                    // Verwerkt een uitdaging
+                    processChallenge(inputMessage);
+                } else if (inputMessage.startsWith("SVR GAME CHALLENGE CANCELLED")) {
+                    // Verwerkt een geannuleerde uitdaging
+                    processCancelledChallenge(inputMessage);
+                }
             }
         } catch (IOException e) {
-            //TODO handle
+            
         }
+    }
+
+    private void processMoveResult(String moveMessage) {
+        String[] parts = moveMessage.split(" ");
+        String player = parts[3].replace("\"", ""); // Haal de speler uit de berichttekst
+        String move = parts[5].replace("\"", ""); // Haal de zet uit de berichttekst
+        String details = parts[7].replace("\"", ""); // Haal de details uit de berichttekst
+
+        System.out.println("Er is een zet gedaan door " + player + ": " + move);
+        System.out.println("Reactie van het spel: " + details);
+    }
+
+    private void processMatchResult(String matchResult) {
+        String[] parts = matchResult.split(" ");
+        String playerResult = parts[3].replace("\"", ""); // Haal het resultaat van de speler uit de berichttekst
+        String scorePlayer1 = parts[5].replace("\"", ""); // Haal de score van speler 1 uit de berichttekst
+        String scorePlayer2 = parts[7].replace("\"", ""); // Haal de score van speler 2 uit de berichttekst
+        String comment = parts[9].replace("\"", ""); // Haal het commentaar uit de berichttekst
+
+        System.out.println("De match is afgelopen.");
+        System.out.println("Resultaat voor " + currentPlayer + ": " + playerResult);
+        System.out.println("Score speler 1: " + scorePlayer1);
+        System.out.println("Score speler 2: " + scorePlayer2);
+        System.out.println("Commentaar: " + comment);
+    }
+
+    private void processChallenge(String challengeMessage) {
+        String[] parts = challengeMessage.split(" ");
+        String challenger = parts[5].replace("\"", ""); // Haal de uitdager uit de berichttekst
+        String gameType = parts[7].replace("\"", ""); // Haal het speltype uit de berichttekst
+        String challengeNumber = parts[9].replace("\"", ""); // Haal het uitdagingsnummer uit de berichttekst
+
+        System.out.println(challenger + " heeft je uitgedaagd voor een speltype: " + gameType);
+        System.out.println("Eerder gemaakte uitdagingen zijn komen te vervallen.");
+        System.out.println("Gebruik quotes als er een spatie in een naam zit.");
+    }
+
+    private void processCancelledChallenge(String cancelledChallenge) {
+        String[] parts = cancelledChallenge.split(" ");
+        String challengeNumber = parts[5].replace("\"", ""); // Haal het uitdagingsnummer uit de berichttekst
+
+        System.out.println("Uitdaging " + challengeNumber + " is vervallen.");
+        System.out.println("Mogelijke oorzaken: speler heeft een andere uitdaging gestart, speler is een match begonnen, speler heeft de verbinding verbroken.");
+    }
+
+    private void sendAcceptChallenge(String challengeNumber) {
+        // Stuur het acceptatiebericht naar de server
+        out.println("challenge accept " + challengeNumber);
+    }
+
+    public void subscribeToGame(String gameType) {
+        out.println("subscribe " + gameType);
+        System.out.println("Je hebt je ingeschreven voor het speltype: " + gameType);
+    }
+
+    public void makeMove(int move) {
+        out.println("move " + move);
+        System.out.println("Je hebt zet " + move + " gedaan.");
     }
 
     /**
      * Deze methode verbreekt de verbinding met de server
      */
-    public void shutdown()
-    {
+    public void shutdown() {
         done = true;
         try {
             in.close();
             out.close();
-            if(!client.isClosed()) {
+            if (!client.isClosed()) {
                 client.close();
             }
         } catch (IOException e) {
@@ -64,16 +143,22 @@ public class Client implements Runnable {
 
     /**
      * Deze methode logt in met de opgegeven gebruikersnaam parameter
+     *
      * @param name
      */
-    public void login(String name)
-    {
+    public void login(String name) {
         System.out.println("Logging in as " + name);
         out.println("login " + name);
     }
 
-    class InputHandler implements Runnable
-    {
+
+    class InputHandler implements Runnable {
+
+        private Scanner scanner;
+
+        InputHandler() {
+            this.scanner = new Scanner(System.in);
+        }
 
         @Override
         public void run() {
@@ -81,25 +166,61 @@ public class Client implements Runnable {
                 BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in));
                 while (!done) {
                     String message = inputReader.readLine();
-                    if(message.equalsIgnoreCase("/quit")) { // we kijken eerst of de gebruiker de disconnect command gebruikt
+                    if (message.equalsIgnoreCase("/quit")) {
                         inputReader.close();
                         shutdown();
                     }
-                    if(message.startsWith("/login")) { // daarna kijken we of de gebruiker de login command gebruikt
+                    if (message.startsWith("/login")) {
                         String[] i = message.split(" ", 2);
                         String name = i[1];
                         login(name);
-                        //out.println("login " + name);
-                    } else { // anders printen we het message
+                    } else if (message.equalsIgnoreCase("/get gamelist")) {
+                        out.println("get gamelist");
+                    } else if (message.equalsIgnoreCase("/get playerlist")) {
+                        out.println("get playerlist");
+                    } else if (message.startsWith("/subscribe")) {
+                        String[] parts = message.split(" ", 2);
+                        String gameType = parts[1];
+                        out.println("subscribe " + gameType);
+                    } else if (message.startsWith("/challenge")) {
+                        String[] parts = message.split(" ");
+                        String player = parts[1].replace("\"", ""); // Haal de speler uit de berichttekst
+                        String gameType = parts[2].replace("\"", ""); // Haal het speltype uit de berichttekst
+                        out.println("challenge " + player + " " + gameType);
+                    } else if (message.startsWith("/challenge accept")) {
+                        String[] parts = message.split(" ");
+                        String challengeNumber = parts[2].replace("\"", ""); // Haal het uitdagingsnummer uit de berichttekst
+                        sendAcceptChallenge(challengeNumber);
+                    //else if (message.startsWith("/move")) {
+                   //         int move = getMoveFromUser();
+                   //         makeMove(move);
+                    //    }
+                    } else {
                         out.println(message);
                     }
                 }
-            } catch (IOException e) { // als er een exception is verbreken we gewoon de verbinding
+            } catch (IOException e) {
                 shutdown();
             }
-
         }
-
     }
 
-}
+        public int getMoveFromUser() {
+            int move = -1;
+            boolean validInput = false;
+
+            while (!validInput) {
+                Scanner scanner = null;
+                try {
+                    System.out.print("Voer je zet in: ");
+                    move = scanner.nextInt();
+                    validInput = true;
+                } catch (InputMismatchException e) {
+                    System.out.println("Ongeldige invoer. Voer a.u.b. een geldig getal in.");
+                    scanner.nextLine(); // Wis de ongeldige invoer
+                }
+            }
+
+            return move;
+        }
+    }
