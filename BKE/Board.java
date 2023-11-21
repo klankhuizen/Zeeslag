@@ -39,6 +39,20 @@ public class Board {
     public boolean checkGameOver(Player player){
         return checkWin(player);
     }
+    
+    public boolean isGameOver() {
+        // Controleerd of er iemand gewonnen heeft
+        if (checkWin(this.currentPlayer.getCharacter()) || checkWin(this.opponent.getCharacter())) {
+            return true;
+        }
+
+        // Controleer op gelijkspel
+        if (checkBoardFull()) {
+            return true;
+        }
+        return false;
+    }
+    
     public void checkResult(Player player){
         if (checkWin(player)){
             System.out.println("Speler " + player.getName() + " heeft gewonnen");
@@ -63,6 +77,14 @@ public class Board {
         return true;
     }
 
+    public boolean isCellEmpty(int x, int y) {
+
+        if (board[x][y] == null) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean checkDraw(Player player){
         return (checkBoardFull() && !checkWin(player));
     }
@@ -74,6 +96,15 @@ public class Board {
             }
         }
     }
+
+    // Een zet ongedaan maken
+    public void undoMove(int x, int y) {
+        // Doormiddel van isCellEmpty leest het af of het vak leeg is
+        if (isCellEmpty(x, y)) {
+            board[x][y] = null;
+        }
+    }
+    
     public void printBoard(){
         for(int row = 0; row < board.length; row++){
             for(int col = 0; col < board[row].length; col++){
