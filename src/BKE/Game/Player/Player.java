@@ -1,5 +1,5 @@
-package BKE.Game;
-public class Player {
+package BKE.Game.Player;
+public class Player implements IPlayer {
     private int id;
     private String name;
     private char charPlayer;

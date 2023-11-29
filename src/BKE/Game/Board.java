@@ -1,5 +1,7 @@
 package BKE.Game;
 
+import BKE.Game.Player.Player;
+
 public class Board {
 
     private final int boardWidth;
