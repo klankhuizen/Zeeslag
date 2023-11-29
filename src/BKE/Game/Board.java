@@ -1,4 +1,5 @@
-package BKE;
+package BKE.Game;
+
 public class Board {
 
     private final int boardWidth;

@@ -6,7 +6,7 @@
  * om de client aan te maken gebruik Client client = new Client();
  * daarna client.run();
  */
-package BKE;
+package BKE.Network;
 
 import java.io.BufferedReader;
 import java.io.IOException;

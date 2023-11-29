@@ -1,5 +1,6 @@
 
-package BKE;
+package BKE.Game;
+
 public class Game {
     private Board board;
     private Player[] players = new Player[2];
