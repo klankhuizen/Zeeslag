@@ -2,7 +2,7 @@ package BKE.Game;
 
 import BKE.Game.Player.Player;
 
-public class Board {
+public class Board implements IBoard {
 
     private final int boardWidth;
     private final int boardHeight;
