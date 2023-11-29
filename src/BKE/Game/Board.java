@@ -1,5 +1,8 @@
-package BKE;
-public class Board {
+package BKE.Game;
+
+import BKE.Game.Player.Player;
+
+public class Board implements IBoard {
 
     private final int boardWidth;
     private final int boardHeight;

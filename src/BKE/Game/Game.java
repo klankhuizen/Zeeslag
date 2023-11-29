@@ -1,5 +1,8 @@
 
-package BKE;
+package BKE.Game;
+
+import BKE.Game.Player.Player;
+
 public class Game {
     private Board board;
     private Player[] players = new Player[2];
