@@ -83,7 +83,7 @@ public class Game {
         do {
             row = random.nextInt(8);
             col = random.nextInt(8);
-        } while (!isValidPosition(row, col)
+        } while (!isValidPosition(row, col));
                  
         char colChar = (char) ('A' + col);
         
