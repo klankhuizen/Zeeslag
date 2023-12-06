@@ -57,6 +57,11 @@ public class ConsoleUserInterface implements IUserInterface {
                         continue;
                     }
 
+                    if (Framework.GetCurrentGame() != null){
+                        Framework.GetCurrentGame().HandleInput(message);
+                        continue;
+                    }
+
                     char choice = message.charAt(0);
                     switch (choice){
 

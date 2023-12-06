@@ -15,14 +15,14 @@ public class Game {
     }
     public void start()
     {
-        this.board = new Board(3,3);
+//        this.board = new Board(3,3);
         this.isOver = false;
         // Just heeft hier coinFlip, maar snap die methode niet
     }
 
     public void update(){
             for(Player p : this.players) {
-                board.checkWin(p);
+//                board.checkWin(p);
                 if(p.getId() != this.currentMove.getId()){
                     this.currentMove = p;
                 }

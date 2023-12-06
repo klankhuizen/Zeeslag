@@ -80,6 +80,13 @@ public class Board implements IBoard {
         return row >= 0 && row < 8 && col >= 0 && col < 8;
     }
 
+    @Override
+    public boolean schepenGezonken() {
+
+        //todo implement
+        return false;
+    }
+
     private String locatie(int row, int col) {
         // Hierdoor kan de locatienaam gegeven worden van een bepaald vak
         char colNaam = (char) ('A' + col);
@@ -87,8 +94,5 @@ public class Board implements IBoard {
         return colNaam + Integer.toString(row + 1);
 
     }
-
-
-
 }
 
