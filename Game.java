@@ -77,9 +77,7 @@ public class Game {
     }
 
     private void zetTegenstander() {
-        // Implementeer de logica voor de tegenstanderbeurt
-        // bijvoorbeeld door willekeurige coördinaten te genereren voor het schieten
-        // Update de borden dienovereenkomstig
+    
     }
 
 
