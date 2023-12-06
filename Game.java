@@ -77,7 +77,17 @@ public class Game {
     }
 
     private void zetTegenstander() {
-    
+        Random random = new Random();
+        
+        int row, col;
+        do {
+            row = random.nextInt(8);
+            col = random.nextInt(8);
+        } while (!isValidPosition(row, col)
+                 
+        char colChar = (char) ('A' + col);
+        
+        System.out.println("Tegenstander schiet op: " + (row + 1) + colChar);
     }
 
 
