@@ -7,6 +7,7 @@ import BKE.Game.IGame;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Zeeslag implements IGame {
 
@@ -198,8 +199,14 @@ public class Zeeslag implements IGame {
             System.out.println("De tegenstander heeft gemist op positie " + _playerBoard.locatie(row, col));
         }
     }
-
-
+/*
+    private boolean vraagOpnieuwSpelen() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Wil je het spel opnieuw spelen? (ja/nee): ");
+        String antwoord = scanner.nextLine().toLowerCase();
+        return antwoord.equals("ja");
+    }
+*/
 
     // schepenGezonken is niet klaar en moet nog gemaakt worden.
     private boolean isGameOver() {
@@ -214,8 +221,23 @@ public class Zeeslag implements IGame {
         } else {
             System.out.println("Je hebt gewonnen!");
         }
-    }
 
+        /*if (vraagOpnieuwSpelen()) {
+            resetSpel();
+        } else {
+            _state = ApplicationState.HALTED;
+        }*/
+    }
+/*
+    private void resetSpel() {
+        // Zet de borden opnieuw op
+        _playerBoard = new Board();
+        _opponentBoard = new Board();
+
+        // Start een nieuwe ronde
+        start();
+    }
+*/
     private void SwitchSides(){
         _playerTurn = !_playerTurn;
         if (_playerTurn){
