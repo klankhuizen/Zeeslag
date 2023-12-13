@@ -123,6 +123,7 @@ public class Board implements IBoard {
 
         return colNaam + Integer.toString(row + 1);
 
+
     }
 }
 

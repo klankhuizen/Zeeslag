@@ -32,15 +32,15 @@ public class Game {
 
     public Player getPlayerByName(String name) {
         Player player = null;
-        for(Player p : this.players)
-        {
-            if(p.getName().equalsIgnoreCase(name)) {
+        for (Player p : this.players) {
+            if (p.getName().equalsIgnoreCase(name)) {
                 player = p;
             } else {
-                System.out.println("Unknown player: " + name );
+                System.out.println("Unknown player: " + name);
             }
         }
         return player;
+
     }
 
     public Player getPlayerById(int id) {

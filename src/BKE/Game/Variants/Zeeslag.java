@@ -149,9 +149,11 @@ public class Zeeslag implements IGame {
 
         System.out.println("Jouw beurt:");
         System.out.print("Voer de rij in (1-8): ");
-        while(_rowSelection == 0){
+        while (_rowSelection == 0) {
             Thread.sleep(100);
+
         }
+
 
         System.out.print("Voer de kolom in (A-H): ");
 

@@ -12,4 +12,5 @@ public interface IBoard {
     String locatie(int i, int columnSelection);
 
     boolean schiet(int i, int columnSelection);
+
 }
