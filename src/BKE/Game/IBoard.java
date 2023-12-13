@@ -8,4 +8,8 @@ public interface IBoard {
     public boolean isValidPosition(int row, int col);
 
     public boolean schepenGezonken();
+
+    String locatie(int i, int columnSelection);
+
+    boolean schiet(int i, int columnSelection);
 }

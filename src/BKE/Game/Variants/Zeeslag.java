@@ -159,6 +159,19 @@ public class Zeeslag implements IGame {
             Thread.sleep(100);
         }
 
+        // Voer het schot uit op het bord van de tegenstander
+        boolean hit = _opponentBoard.schiet(_rowSelection - 1, _columnSelection);
+
+        // Toon de resultaten van het schot aan de speler
+        if (hit) {
+            System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
+        } else {
+            System.out.println("Helaas, je hebt gemist op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
+        }
+
+        // Reset de selecties voor de volgende beurt
+        _columnSelection = -1;
+        _rowSelection = 0;
     }
 
     private void zetTegenstander() {
@@ -173,8 +186,17 @@ public class Zeeslag implements IGame {
 
         char colChar = (char) ('A' + col);
 
-        System.out.println("Tegenstander schiet op: " + (row + 1) + colChar);
+        // Voer het schot uit op het bord van de speler
+        boolean hit = _playerBoard.schiet(row, col);
+
+        // Toon de resultaten van het schot aan de speler
+        if (hit) {
+            System.out.println("De tegenstander heeft een schip geraakt op positie " + _playerBoard.locatie(row, col));
+        } else {
+            System.out.println("De tegenstander heeft gemist op positie " + _playerBoard.locatie(row, col));
+        }
     }
+
 
 
     // schepenGezonken is niet klaar en moet nog gemaakt worden.
