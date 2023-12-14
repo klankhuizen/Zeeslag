@@ -5,6 +5,7 @@ import BKE.Framework;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class ConsoleUserInterface implements IUserInterface {
@@ -58,51 +59,74 @@ public class ConsoleUserInterface implements IUserInterface {
                     }
 
                     if (Framework.GetCurrentGame() != null){
-                        Framework.GetCurrentGame().HandleInput(message);
-                        continue;
+                        handleInGameInput(message);
+                    } else{
+                        handleOutOfGameInput(message);
                     }
-
-                    char choice = message.charAt(0);
-                    switch (choice){
-
-                        case '1':
-                            Framework.LoadGame(Zeeslag.class, false);
-                            break;
-                        case '2':
-                            Framework.LoadGame(Zeeslag.class, true);
-                            break;
-
-                        case '3':
-                            Framework.LoadGame(TicTacToe.class, false);
-                            break;
-                        case '4':
-                            Framework.LoadGame(TicTacToe.class, true);
-                            break;
-
-                        case 'Q':
-                        case 'q':
-                            if (Framework.GetCurrentGame() == null){
-                                scannerState = ApplicationState.HALTED;
-                                System.exit(0);
-                            } else{
-                                Framework.UnloadCurrentGame();
-                                ShowMenu();
-                            }
-                            break;
-
-                        default:
-                            if (Framework.GetCurrentGame() == null){
-                                System.out.println("Keuze niet herkend! Probeer een van de bovenstaande opties.");
-                                break;
-                            }
-
-                            Framework.GetCurrentGame().HandleInput(message);
-                    }
-
-
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+            }
+        }
+
+        /**
+         * Handles input and passes it through to a currently playing game
+         * @param message User input
+         * @throws IOException Error with game
+         */
+        private void handleInGameInput(String message) throws IOException {
+            // If the user presses Q whilst in a game, the game should quit
+            if (message.length() == 1 && message.toLowerCase().charAt(0) == 'q'){
+                Framework.UnloadCurrentGame();
+                ShowMenu();
+                return;
+            }
+
+            // The user did not press Q, the game continues and any input is passed
+            // through to the game to handle.
+            Framework.GetCurrentGame().HandleInput(message);
+        }
+
+        /**
+         * Handles input when there is no game currently being played
+         * @param message user input
+         * @throws IOException Error with game
+         */
+        private void handleOutOfGameInput(String message) throws IOException {
+            if (message.length() == 1) {
+                char choice = message.charAt(0);
+                switch (choice){
+
+                    case '1':
+                        Framework.LoadGame(Zeeslag.class, false);
+                        break;
+                    case '2':
+                        Framework.LoadGame(Zeeslag.class, true);
+                        break;
+
+                    case '3':
+                        Framework.LoadGame(TicTacToe.class, false);
+                        break;
+                    case '4':
+                        Framework.LoadGame(TicTacToe.class, true);
+                        break;
+
+                    case 'Q':
+                    case 'q':
+                        scannerState = ApplicationState.HALTED;
+                        System.exit(0);
+                        break;
+
+                    default:
+                        if (Framework.GetCurrentGame() == null){
+                            System.out.println("Keuze niet herkend! Probeer een van de bovenstaande opties.");
+                            break;
+                        }
+
+                        Framework.GetCurrentGame().HandleInput(message);
+                }
+            } else {
+                System.out.println("Invalid Input");
             }
         }
     }
