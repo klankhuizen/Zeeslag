@@ -107,6 +107,10 @@ public class Board implements IBoard {
         if (veld[row][col] == 'O') {
             veld[row][col] = 'X'; // Markeer het getroffen schip
             System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + locatie(row, col));
+            // Controleert of het schip is gezonken
+            if (isSchipGezonken(row, col)) {
+                System.out.println("Helaas, je schip is gezonken op positie " + locatie(row, col));
+            }
             return true;
         } else if (veld[row][col] == '-') {
             veld[row][col] = 'M'; // Markeer de gemiste schoten
@@ -115,6 +119,27 @@ public class Board implements IBoard {
             System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
         }
         return false;
+    }
+
+    private boolean isSchipGezonken(int row, int col) {
+        // Controleer horizontaal
+        int countHorizontaal = 0;
+        for (int j = 0; j < 8; j++) {
+            if (veld[row][j] == 'X') {
+                countHorizontaal++;
+            }
+        }
+
+        // Controleer verticaal
+        int countVerticaal = 0;
+        for (int i = 0; i < 8; i++) {
+            if (veld[i][col] == 'X') {
+                countVerticaal++;
+            }
+        }
+
+        // Als alle vakjes van het schip zijn geraakt, is het schip gezonken
+        return countHorizontaal == 5 || countVerticaal == 5;
     }
 
     public String locatie(int row, int col) {
