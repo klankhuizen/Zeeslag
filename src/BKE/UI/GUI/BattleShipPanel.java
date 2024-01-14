@@ -5,6 +5,9 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class BattleShipPanel extends JPanel {
 
@@ -28,7 +31,12 @@ public class BattleShipPanel extends JPanel {
      */
     private int _squareSize = 0;
 
-    private String _name = "";
+
+    /**
+     * Callback function that will be called when a valid x,y grid is clicked so the game can handle that input
+     */
+    private BiConsumer _callback;
+
     /**
      * Map of the different colors used per field value
      */
@@ -42,8 +50,9 @@ public class BattleShipPanel extends JPanel {
      * Create a new battleship panel
      * @param numVertical The amount of vertical squares
      * @param numHorizontal The amount of horizontal squares
+     * @param callback Function called when a valid grid coordinate is clicked.
      */
-    public BattleShipPanel(String name, int numVertical, int numHorizontal) {
+    public BattleShipPanel(int numVertical, int numHorizontal, BiConsumer<Integer, Integer> callback) {
         super();
         if (numHorizontal < 1 || numVertical < 1){
             throw new IllegalArgumentException("Min size of grid is 1x1");
@@ -51,9 +60,7 @@ public class BattleShipPanel extends JPanel {
         _numHorizontal = numHorizontal;
         _numVertical = numVertical;
         _matrix = new int[numHorizontal][numVertical];
-
-        _name = name;
-
+        _callback = callback;
         this.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -75,7 +82,7 @@ public class BattleShipPanel extends JPanel {
 
         // Do an out-of-bounds check
         if (h < _numHorizontal && v < _numVertical){
-            System.out.println("[" + _name + "] Clicked square with coords " + h + " " + v);
+            _callback.accept(h, v);
         }
     }
 

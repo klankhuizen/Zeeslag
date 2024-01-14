@@ -20,8 +20,12 @@ public class GraphicalUserInterface implements IUserInterface {
 
         _frame.setLayout(layoutOne);
 
-        BattleShipPanel playerOne = new BattleShipPanel("PLAYERONE", 10, 10);
-        BattleShipPanel playerTwo = new BattleShipPanel("PLAYERTWO", 10, 10);
+        BattleShipPanel playerOne = new BattleShipPanel( 10, 10, (x, y) -> {
+            System.out.println("PLAYERONE " + x + "," + y);
+        });
+        BattleShipPanel playerTwo = new BattleShipPanel(10, 10, (x, y) -> {
+            System.out.println("PLAYERTWO " + x + "," + y);
+        });
 
 
         JLabel txtPlayerOne = new JLabel("PLAYER ONE");
