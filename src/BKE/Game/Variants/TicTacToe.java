@@ -33,7 +33,12 @@ public class TicTacToe implements IGame {
     }
 
     @Override
-    public IBoard GetBoard() {
+    public IBoard GetPlayerBoard() {
+        return null;
+    }
+
+    @Override
+    public IBoard GetOpponentBoard() {
         return null;
     }
 

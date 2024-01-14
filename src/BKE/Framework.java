@@ -11,7 +11,6 @@ import BKE.UI.IUserInterface;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public final class Framework {
 
@@ -22,7 +21,7 @@ public final class Framework {
 
     private static ArrayList<IGame> _availableGames;
 
-    private static IUserInterface _userInterface;
+    private static final ArrayList<IUserInterface> userInterfaces = new ArrayList<>();
 
     private static Thread _gameThread;
 
@@ -65,18 +64,12 @@ public final class Framework {
             }
         });
         _gameThread.start();
-        GraphicalUserInterface s = new GraphicalUserInterface();
-        s.Start();
 
-        int[][] p1 = new int[10][10];
-        p1[5][2] = 1;
+        userInterfaces.add(new ConsoleUserInterface());
 
-        int[][] p2 = new int[10][10];
-        p2[6][1] = 2;
-
-        s.UpdateFields(p1, p2);
-        _userInterface = new ConsoleUserInterface();
-        _userInterface.Start();
+        for (IUserInterface userInterface : userInterfaces) {
+            userInterface.Start();
+        }
 
         return _gameThread;
     }
@@ -93,6 +86,7 @@ public final class Framework {
 
             case "BKE.Game.Variants.Zeeslag":
                 _currentGame = new Zeeslag();
+
                 break;
 
             case "BKE.Game.Variants.TicTacToe":
@@ -106,6 +100,17 @@ public final class Framework {
 
         _currentGame.initialize();
         _currentGame.start();
+
+        IUserInterface iface = new GraphicalUserInterface();
+        iface.Start();
+        userInterfaces.add(iface);
+    }
+
+    public static void UpdateUI(int[][] playerOne, int[][] playerTwo){
+        for (IUserInterface userInterface : userInterfaces) {
+
+            userInterface.UpdateFields(playerOne, playerTwo);
+        }
     }
 
     public static void Shutdown() {

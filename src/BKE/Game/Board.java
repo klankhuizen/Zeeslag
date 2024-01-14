@@ -1,14 +1,21 @@
 package BKE.Game;
 
-import BKE.Game.Player.Player;
+import BKE.Game.Variants.Zeeslag;
 
 public class Board implements IBoard {
+    private int[][] board;
 
-    private char[][] veld;
+    private int _height;
+    private int _width;
 
-    public Board() {
-        // Hier wordt er een bord van 8 bij 8 gedefineerd
-        veld = new char[8][8];
+    public Board(int width, int height) {
+        if (width < 1 || height < 1) {
+            throw new IllegalArgumentException("Board must be 1x1 minimum.");
+        }
+
+        _width = width;
+        _height = height;
+        board = new int[width][height];
         BoardOn();
 
     }
@@ -16,11 +23,11 @@ public class Board implements IBoard {
     private void BoardOn() {
         // Hier wordt een loop gemaakt om het veld te activeren met lege
         // vakjes door middel van -
-        for (int i  = 0; i < 8; i ++) {
+        for (int i  = 0; i < _height; i ++) {
 
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j < _width; j++) {
 
-                veld[i][j] = '-';
+                board[i][j] = Zeeslag.FieldValues.EMPTY.getValue();
 
             }
         }
@@ -28,31 +35,7 @@ public class Board implements IBoard {
 
     private boolean juistePositie(int row, int col) {
         // Hier wordt er gekeken of de positie juist is die gekozen werd op het veld
-        return row >= 0 && row < 8 && col >= 0 && col < 8 && veld[row][col] == '-';
-
-    }
-
-    public void printBoard() {
-        // Hier worden de verschilende vakken letters gegeven (de bovenste rij)
-        // Dit is om het overzichtelijk te maken voor de speler in welk vak hij zijn ship
-        // plaatst en zal op schieten
-        System.out.println("  A B C D E F G H");
-        // Door middel van een loop wordt het bord uit geprint met de actuele informatie
-        for (int i = 0; i < 8; i++) {
-
-            System.out.print((i + 1) + " ");
-
-            for (int j = 0; j < 8; j++) {
-
-                System.out.print(veld[i][j] + " ");
-
-            }
-
-            System.out.println();
-
-        }
-
-        System.out.println();
+        return row >= 0 && row < _height && col >= 0 && col < _width && board[row][col] == 0;
 
     }
 
@@ -60,32 +43,26 @@ public class Board implements IBoard {
         // Hier wordt er gecontroleerd of de posiitie juist is.
         // Zo ja krijgt de speler een melding dat het plaatsen gelukt is.
         if (juistePositie(row, col)) {
-
-            veld[row][col] = 'O';
-
+            board[row][col] = Zeeslag.FieldValues.SHIP.getValue();
             System.out.println("Schip geplaatst op positie " + locatie(row, col));
-
         }
-
         else {
-
             System.out.println("je kan hier geen schip plaatsen");
-
         }
     }
 
     public boolean isValidPosition(int row, int col) {
         // Controleer of de zet binnen het bord valt
         // Ik weet niet of dit zal werken
-        return row >= 0 && row < 8 && col >= 0 && col < 8;
+        return row >= 0 && row < _height && col >= 0 && col < _width;
     }
 
     @Override
     public boolean schepenGezonken() {
         // Loop door het bord en controleer of er nog 'O' (schepen) aanwezig zijn
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (veld[i][j] == 'O') {
+        for (int i = 0; i < _width; i++) {
+            for (int j = 0; j < _height; j++) {
+                if (board[i][j] == Zeeslag.FieldValues.SHIP.getValue()) {
                     // Er is nog minstens één schip aanwezig
                     return false;
                 }
@@ -104,16 +81,16 @@ public class Board implements IBoard {
         }
 
         // Controleer of er een schip op de opgegeven positie is
-        if (veld[row][col] == 'O') {
-            veld[row][col] = 'X'; // Markeer het getroffen schip
+        if (board[row][col] == Zeeslag.FieldValues.SHIP.getValue()) {
+            board[row][col] = Zeeslag.FieldValues.HIT.getValue(); // Markeer het getroffen schip
             System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + locatie(row, col));
             // Controleert of het schip is gezonken
             if (isSchipGezonken(row, col)) {
                 System.out.println("Helaas, je schip is gezonken op positie " + locatie(row, col));
             }
             return true;
-        } else if (veld[row][col] == '-') {
-            veld[row][col] = 'M'; // Markeer de gemiste schoten
+        } else if (board[row][col] == Zeeslag.FieldValues.EMPTY.getValue()) {
+            board[row][col] = Zeeslag.FieldValues.MISS.getValue(); // Markeer de gemiste schoten
             System.out.println("Helaas, je hebt gemist op positie " + locatie(row, col));
         } else {
             System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
@@ -121,11 +98,26 @@ public class Board implements IBoard {
         return false;
     }
 
+    @Override
+    public int[][] getBoard() {
+        return board;
+    }
+
+    @Override
+    public int getWidth() {
+        return _width;
+    }
+
+    @Override
+    public int getHeight() {
+        return _height;
+    }
+
     private boolean isSchipGezonken(int row, int col) {
         // Controleer horizontaal
         int countHorizontaal = 0;
         for (int j = 0; j < 8; j++) {
-            if (veld[row][j] == 'X') {
+            if (board[row][j] == Zeeslag.FieldValues.HIT.getValue()) {
                 countHorizontaal++;
             }
         }
@@ -133,22 +125,20 @@ public class Board implements IBoard {
         // Controleer verticaal
         int countVerticaal = 0;
         for (int i = 0; i < 8; i++) {
-            if (veld[i][col] == 'X') {
+            if (board[i][col] == Zeeslag.FieldValues.HIT.getValue()) {
                 countVerticaal++;
             }
         }
 
         // Als alle vakjes van het schip zijn geraakt, is het schip gezonken
+        // TODO This needs to be different
         return countHorizontaal == 5 || countVerticaal == 5;
     }
 
     public String locatie(int row, int col) {
         // Hierdoor kan de locatienaam gegeven worden van een bepaald vak
         char colNaam = (char) ('A' + col);
-
         return colNaam + Integer.toString(row + 1);
-
-
     }
 }
 

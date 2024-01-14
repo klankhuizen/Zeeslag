@@ -1,5 +1,7 @@
 package BKE.UI.GUI;
 
+import BKE.Game.Variants.Zeeslag;
+
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
@@ -31,6 +33,11 @@ public class BattleShipPanel extends JPanel {
      */
     private int _squareSize = 0;
 
+    /**
+     * If true, ships are displayed on the screen.
+     */
+    private boolean _showShips = false;
+
 
     /**
      * Callback function that will be called when a valid x,y grid is clicked so the game can handle that input
@@ -52,7 +59,7 @@ public class BattleShipPanel extends JPanel {
      * @param numHorizontal The amount of horizontal squares
      * @param callback Function called when a valid grid coordinate is clicked.
      */
-    public BattleShipPanel(int numVertical, int numHorizontal, BiConsumer<Integer, Integer> callback) {
+    public BattleShipPanel(int numVertical, int numHorizontal, boolean showShips, BiConsumer<Integer, Integer> callback) {
         super();
         if (numHorizontal < 1 || numVertical < 1){
             throw new IllegalArgumentException("Min size of grid is 1x1");
@@ -61,6 +68,7 @@ public class BattleShipPanel extends JPanel {
         _numVertical = numVertical;
         _matrix = new int[numHorizontal][numVertical];
         _callback = callback;
+        _showShips = showShips;
         this.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -119,7 +127,12 @@ public class BattleShipPanel extends JPanel {
                     int value = _matrix[h][v]; // Grab field value
                     graphics.setColor(new Color(0, 0, 0)); // Borders are always black
                     graphics.drawRect(x, y, _squareSize, _squareSize);
-                    graphics.setColor(_colorMap.get(value)); // Draw BG color based on field value
+
+                    if (_showShips || Zeeslag.FieldValues.SHIP.getValue() != value) {
+                        graphics.setColor(_colorMap.get(value)); // Draw BG color based on field value
+                    } else {
+                        graphics.setColor(_colorMap.get(Zeeslag.FieldValues.EMPTY.getValue()));
+                    }
                     graphics.fillRect(x + 1, y + 1, _squareSize - 1, _squareSize - 1); // 1 px offset so the border is visible
                     y += _squareSize;
                 }

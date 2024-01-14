@@ -6,9 +6,17 @@ import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ConsoleUserInterface implements IUserInterface {
+
+    private Map<Integer, Character> _printValues = Map.of(
+           Zeeslag.FieldValues.EMPTY.getValue(), '-',
+           Zeeslag.FieldValues.HIT.getValue(), 'X',
+           Zeeslag.FieldValues.MISS.getValue(), 'M',
+           Zeeslag.FieldValues.SHIP.getValue(), 'O'
+    );
 
     private StartupChoiceHandler _inputHandler;
 
@@ -22,6 +30,41 @@ public class ConsoleUserInterface implements IUserInterface {
     public void Start() {
 
         _inputHandler.run();
+    }
+
+    @Override
+    public void UpdateFields(int[][] playerOne, int[][] playerTwo) {
+
+        PrintBoard(playerOne);
+        PrintBoard(playerTwo);
+
+    }
+
+    public void PrintBoard(int[][] board){
+        // Hier worden de verschilende vakken letters gegeven (de bovenste rij)
+        // Dit is om het overzichtelijk te maken voor de speler in welk vak hij zijn ship
+        // plaatst en zal op schieten
+        StringBuilder horizontalLegend = new StringBuilder("  ");
+        for (int i = 0; i < board.length; i++){
+            horizontalLegend.append((char)('A' + i)).append(" ");
+        }
+
+        System.out.println(horizontalLegend);
+
+        // Door middel van een loop wordt het bord uit geprint met de actuele informatie
+        for (int i = 0; i < board.length; i++) {
+
+            StringBuilder rowString = new StringBuilder((i + 1 + "")).append(" ");
+
+            for (int j = 0; j < board[0].length; j++) {
+                rowString.append(((char)_printValues.get(board[i][j]))).append(" ");
+            }
+
+            System.out.println(rowString);
+
+        }
+
+        System.out.println();
     }
 
     static class StartupChoiceHandler implements Runnable {

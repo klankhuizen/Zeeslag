@@ -1,6 +1,7 @@
 package BKE.UI;
 
 import BKE.Framework;
+import BKE.Game.IBoard;
 import BKE.UI.GUI.BattleShipPanel;
 
 import javax.swing.*;
@@ -24,12 +25,14 @@ public class GraphicalUserInterface implements IUserInterface {
 
         _frame.setLayout(layoutOne);
 
-        _playerOne = new BattleShipPanel( 10, 10, (x, y) -> {
-            System.out.println("PLAYERONE " + x + "," + y);
+        IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
+        IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
+        _playerOne = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
+//            System.out.println("PLAYERONE " + x + "," + y);
+            Framework.GetCurrentGame().HandleInput(y+1 + "" + ((char)(x + 'A')) );
         });
-        _playerTwo = new BattleShipPanel(10, 10, (x, y) -> {
+        _playerTwo = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
             System.out.println("PLAYERTWO " + x + "," + y);
-            Framework.GetCurrentGame().HandleInput(x+1 + "" + ((char)(y + 'A')) );
         });
 
 

@@ -1,10 +1,12 @@
 package BKE.Game.Variants;
 
 import BKE.ApplicationState;
+import BKE.Framework;
 import BKE.Game.Board;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
@@ -20,6 +22,22 @@ public class Zeeslag implements IGame {
     private int _columnSelection;
 
     private Thread _thread;
+
+    public enum FieldValues {
+
+        // This is some bullshit, Java!
+        EMPTY(0), HIT(1), MISS(2), SHIP(3);
+
+        private final int value;
+        private FieldValues(int val){
+            this.value = val;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+    }
 
     @Override
     public void start() {
@@ -41,11 +59,7 @@ public class Zeeslag implements IGame {
 
             // Spelronde
             while (!isGameOver()) {
-                System.out.println("\nJouw bord:");
-                _playerBoard.printBoard();
 
-                System.out.println("\nBord van de tegenstander:");
-                _opponentBoard.printBoard();
 
                 // Beurt van speler
                 try {
@@ -54,6 +68,8 @@ public class Zeeslag implements IGame {
                     throw new RuntimeException(e);
                 }
 
+                Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+
                 // Controleer of het spel voorbij is
                 if (isGameOver()) {
                     break;
@@ -61,6 +77,7 @@ public class Zeeslag implements IGame {
 
                 // Beurt van tegenstander
                 zetTegenstander();
+                Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
             }
 
             // Toon het resultaat
@@ -75,8 +92,8 @@ public class Zeeslag implements IGame {
         System.out.println("Initializing Zeeslag");
 
         // zet bord op
-        _playerBoard = new Board();
-        _opponentBoard = new Board();
+        _playerBoard = new Board(8, 8);
+        _opponentBoard = new Board(8, 8);
         _state = ApplicationState.RUNNING;
     }
 
@@ -107,8 +124,12 @@ public class Zeeslag implements IGame {
     }
 
     @Override
-    public IBoard GetBoard() {
+    public IBoard GetPlayerBoard() {
         return _playerBoard;
+    }
+
+    public IBoard GetOpponentBoard(){
+        return _opponentBoard;
     }
 
     @Override
@@ -240,4 +261,6 @@ public class Zeeslag implements IGame {
             System.out.print("Voer de rij in (1-8): ");
         }
     }
+
+
 }
