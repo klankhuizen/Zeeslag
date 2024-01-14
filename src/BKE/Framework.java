@@ -5,6 +5,7 @@ import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Network.INetworkClient;
 import BKE.UI.ConsoleUserInterface;
+import BKE.UI.GraphicalUserInterface;
 import BKE.UI.IUserInterface;
 
 import java.io.IOException;
@@ -64,8 +65,11 @@ public final class Framework {
             }
         });
         _gameThread.start();
+        GraphicalUserInterface s = new GraphicalUserInterface();
+        s.Start();
         _userInterface = new ConsoleUserInterface();
         _userInterface.Start();
+
         return _gameThread;
     }
 

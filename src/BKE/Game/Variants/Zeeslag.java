@@ -55,9 +55,9 @@ public class Zeeslag implements IGame {
                 }
 
                 // Controleer of het spel voorbij is
-//                if (isGameOver()) {
-//                    break;
-//                }
+                if (isGameOver()) {
+                    break;
+                }
 
                 // Beurt van tegenstander
                 zetTegenstander();
