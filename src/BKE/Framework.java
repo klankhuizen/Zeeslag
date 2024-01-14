@@ -67,6 +67,14 @@ public final class Framework {
         _gameThread.start();
         GraphicalUserInterface s = new GraphicalUserInterface();
         s.Start();
+
+        int[][] p1 = new int[10][10];
+        p1[5][2] = 1;
+
+        int[][] p2 = new int[10][10];
+        p2[6][1] = 2;
+
+        s.UpdateFields(p1, p2);
         _userInterface = new ConsoleUserInterface();
         _userInterface.Start();
 

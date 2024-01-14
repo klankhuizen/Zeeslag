@@ -1,5 +1,6 @@
 package BKE.UI;
 
+import BKE.Framework;
 import BKE.UI.GUI.BattleShipPanel;
 
 import javax.swing.*;
@@ -8,9 +9,12 @@ public class GraphicalUserInterface implements IUserInterface {
 
     JFrame _frame;
 
+    BattleShipPanel _playerOne;
+    BattleShipPanel _playerTwo;
+
     @Override
     public void Start() {
-        _frame = new JFrame("TEST GUI YOUR MOM");
+        _frame = new JFrame("BATTLESHIP");
 
 
         _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -20,11 +24,12 @@ public class GraphicalUserInterface implements IUserInterface {
 
         _frame.setLayout(layoutOne);
 
-        BattleShipPanel playerOne = new BattleShipPanel( 10, 10, (x, y) -> {
+        _playerOne = new BattleShipPanel( 10, 10, (x, y) -> {
             System.out.println("PLAYERONE " + x + "," + y);
         });
-        BattleShipPanel playerTwo = new BattleShipPanel(10, 10, (x, y) -> {
+        _playerTwo = new BattleShipPanel(10, 10, (x, y) -> {
             System.out.println("PLAYERTWO " + x + "," + y);
+            Framework.GetCurrentGame().HandleInput(x+1 + "" + ((char)(y + 'A')) );
         });
 
 
@@ -32,15 +37,15 @@ public class GraphicalUserInterface implements IUserInterface {
         JLabel txtPlayerTwo = new JLabel("PLAYER TWO");
 
         _frame.getContentPane().add(txtPlayerOne);
-        _frame.getContentPane().add(playerOne);
+        _frame.getContentPane().add(_playerOne);
         _frame.getContentPane().add(txtPlayerTwo);
-        _frame.getContentPane().add(playerTwo);
+        _frame.getContentPane().add(_playerTwo);
         _frame.setVisible(true);
     }
 
-    public void UpdateField(int[][] field){
-        int length = field.length;
-        int height = field[0].length;
+    public void UpdateFields(int[][] playerOneField, int[][] playerTwoField){
+        _playerOne.UpdateField(playerOneField);
+        _playerTwo.UpdateField(playerTwoField);
     }
 }
 

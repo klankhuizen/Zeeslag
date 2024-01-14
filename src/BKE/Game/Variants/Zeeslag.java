@@ -87,11 +87,13 @@ public class Zeeslag implements IGame {
         // ongeldige input negeren
         if (!_playerTurn || input == null || input.isEmpty()) return;
 
-        if (_rowSelection == 0 ){
-            _rowSelection = Integer.parseInt(String.valueOf(input.charAt(0)));
-        } else if (_columnSelection < 0) {
-            _columnSelection = input.charAt(0) - 'A';
-        }
+        if (input.length() != 2) return;
+
+        _rowSelection = Integer.parseInt(String.valueOf(input.charAt(0)));
+        _columnSelection = input.charAt(1) - 'A';
+
+        System.out.println("Input: " + input + " translates to " + _rowSelection + " "+ _columnSelection);
+
     }
 
     @Override
@@ -149,16 +151,9 @@ public class Zeeslag implements IGame {
         _rowSelection = 0;
 
         System.out.println("Jouw beurt:");
-        System.out.print("Voer de rij in (1-8): ");
-        while (_rowSelection == 0) {
-            Thread.sleep(100);
+        System.out.print("Voer coordinaten in:(1-8 + A-H) (1A, 4D, 8B)");
 
-        }
-
-
-        System.out.print("Voer de kolom in (A-H): ");
-
-        while(_columnSelection < 0){
+        while(_rowSelection == 0 && _columnSelection < 0){
             Thread.sleep(100);
         }
 
