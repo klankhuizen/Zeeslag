@@ -36,14 +36,16 @@ public class GraphicalUserInterface implements IUserInterface {
         });
 
 
-        JLabel txtPlayerOne = new JLabel("PLAYER ONE");
-        JLabel txtPlayerTwo = new JLabel("PLAYER TWO");
+        JLabel txtPlayerOne = new JLabel("OPPONENT BOARD");
+        JLabel txtPlayerTwo = new JLabel("PLAYER BOARD");
 
         _frame.getContentPane().add(txtPlayerOne);
         _frame.getContentPane().add(_playerOne);
         _frame.getContentPane().add(txtPlayerTwo);
         _frame.getContentPane().add(_playerTwo);
         _frame.setVisible(true);
+
+        Framework.GetCurrentGame().RequestUpdate();
     }
 
     public void UpdateFields(int[][] playerOneField, int[][] playerTwoField){

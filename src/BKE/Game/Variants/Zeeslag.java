@@ -132,6 +132,10 @@ public class Zeeslag implements IGame {
         return _opponentBoard;
     }
 
+    public void RequestUpdate() {
+        Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+    }
+
     @Override
     public void close() throws IOException {
         System.out.println("Closing Zeeslag");

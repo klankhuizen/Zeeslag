@@ -41,4 +41,7 @@ public interface IGame extends Closeable {
     public IBoard GetPlayerBoard();
     public IBoard GetOpponentBoard();
 
+
+    public void RequestUpdate();
+
 }

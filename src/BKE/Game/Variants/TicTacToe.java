@@ -43,6 +43,11 @@ public class TicTacToe implements IGame {
     }
 
     @Override
+    public void RequestUpdate() {
+
+    }
+
+    @Override
     public void close() throws IOException {
 
     }

@@ -35,12 +35,12 @@ public class ConsoleUserInterface implements IUserInterface {
     @Override
     public void UpdateFields(int[][] playerOne, int[][] playerTwo) {
 
-        PrintBoard(playerOne);
-        PrintBoard(playerTwo);
+        PrintBoard(playerOne, false);
+        PrintBoard(playerTwo, true);
 
     }
 
-    public void PrintBoard(int[][] board){
+    public void PrintBoard(int[][] board, boolean showShips){
         // Hier worden de verschilende vakken letters gegeven (de bovenste rij)
         // Dit is om het overzichtelijk te maken voor de speler in welk vak hij zijn ship
         // plaatst en zal op schieten
@@ -57,7 +57,13 @@ public class ConsoleUserInterface implements IUserInterface {
             StringBuilder rowString = new StringBuilder((i + 1 + "")).append(" ");
 
             for (int j = 0; j < board[0].length; j++) {
-                rowString.append(((char)_printValues.get(board[i][j]))).append(" ");
+                int value = board[i][j];
+                if (showShips || Zeeslag.FieldValues.SHIP.getValue() != value){
+                    rowString.append(((char)_printValues.get(value))).append(" ");
+                } else{
+                    rowString.append(((char)_printValues.get(Zeeslag.FieldValues.EMPTY.getValue()))).append(" ");
+                }
+
             }
 
             System.out.println(rowString);

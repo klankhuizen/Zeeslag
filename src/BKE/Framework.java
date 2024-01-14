@@ -102,13 +102,12 @@ public final class Framework {
         _currentGame.start();
 
         IUserInterface iface = new GraphicalUserInterface();
-        iface.Start();
         userInterfaces.add(iface);
+        iface.Start();
     }
 
     public static void UpdateUI(int[][] playerOne, int[][] playerTwo){
         for (IUserInterface userInterface : userInterfaces) {
-
             userInterface.UpdateFields(playerOne, playerTwo);
         }
     }
