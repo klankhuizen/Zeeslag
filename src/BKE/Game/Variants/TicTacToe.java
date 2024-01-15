@@ -48,6 +48,16 @@ public class TicTacToe implements IGame {
     }
 
     @Override
+    public boolean getIsNetworked() {
+        return false;
+    }
+
+    @Override
+    public String GetGameName() {
+        return "TIC TAC TOE";
+    }
+
+    @Override
     public void close() throws IOException {
 
     }

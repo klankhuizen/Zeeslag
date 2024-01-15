@@ -65,11 +65,7 @@ public final class Framework {
         });
         _gameThread.start();
 
-        userInterfaces.add(new ConsoleUserInterface());
-
-        for (IUserInterface userInterface : userInterfaces) {
-            userInterface.Start();
-        }
+        CreateConsoleUI();
 
         return _gameThread;
     }
@@ -101,9 +97,37 @@ public final class Framework {
         _currentGame.initialize();
         _currentGame.start();
 
-        IUserInterface iface = new GraphicalUserInterface();
-        userInterfaces.add(iface);
-        iface.Start();
+        CreateGraphicalUI();
+        for (IUserInterface uInf : userInterfaces){
+            new Thread(uInf::Start).start();
+        }
+
+
+    }
+
+    private static void CreateConsoleUI(){
+        for (IUserInterface userInterface : userInterfaces){
+            if (userInterface instanceof ConsoleUserInterface){
+                return;
+            }
+        }
+
+        IUserInterface iFace = new ConsoleUserInterface();
+        userInterfaces.add(iFace);
+        iFace.Start();
+    }
+
+    private static void CreateGraphicalUI(){
+
+        for (IUserInterface userInterface : userInterfaces){
+            if (userInterface instanceof GraphicalUserInterface){
+                return;
+            }
+        }
+
+        IUserInterface iFace = new GraphicalUserInterface();
+        userInterfaces.add(iFace);
+        iFace.Start();
     }
 
     public static void UpdateUI(int[][] playerOne, int[][] playerTwo){

@@ -44,4 +44,12 @@ public interface IGame extends Closeable {
 
     public void RequestUpdate();
 
+    /**
+     * Returns whether or not the game is networked
+     * @return
+     *
+     */
+    boolean getIsNetworked();
+
+    String GetGameName();
 }

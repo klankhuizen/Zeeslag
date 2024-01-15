@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 public class Zeeslag implements IGame {
 
+    private final String _name = "ZEESLAG";
     private ApplicationState _state;
     private IBoard _playerBoard;
     private IBoard _opponentBoard;
@@ -134,6 +135,16 @@ public class Zeeslag implements IGame {
 
     public void RequestUpdate() {
         Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+    }
+
+    @Override
+    public boolean getIsNetworked() {
+        return false;
+    }
+
+    @Override
+    public String GetGameName() {
+        return  _name;
     }
 
     @Override
