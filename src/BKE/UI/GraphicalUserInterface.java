@@ -4,6 +4,7 @@ import BKE.Framework;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.UI.GUI.BattleShipPanel;
+import BKE.UI.GUI.SelectGamePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,38 +92,15 @@ public class GraphicalUserInterface implements IUserInterface {
         JMenu menu = new JMenu("Menu");
 
         JMenu gameMenu = new JMenu("Game");
-
         JMenuItem menuItemNG = new JMenuItem("New Game");
         JMenuItem menuItemClose = new JMenuItem("Close");
-
-
 
         menuItemNG.addActionListener(e -> {
 
             System.out.println("Start New Game");
-
-            try {
-
-                IGame currentGame = Framework.GetCurrentGame();
-
-                Framework.UnloadCurrentGame();
-                try {
-
-                    if (currentGame == null){
-                        return;
-                    }
-
-                    Framework.LoadGame(currentGame.getClass(), currentGame.getIsNetworked());
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-
+            SelectGamePanel sgp = new SelectGamePanel();
+            sgp.setVisible(true);
         });
-
 
         menuItemClose.addActionListener(e -> {
 
@@ -135,7 +113,6 @@ public class GraphicalUserInterface implements IUserInterface {
             }
 
         });
-
 
         menu.add(menuItemNG);
         menu.add(menuItemClose);

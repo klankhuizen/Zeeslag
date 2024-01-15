@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 
 public final class Framework {
 
@@ -20,7 +22,7 @@ public final class Framework {
 
     private static IGame _currentGame;
 
-    private static ArrayList<Type> _availableGames;
+    private static HashMap<String, Type> _availableGames;
 
     private static final ArrayList<IUserInterface> userInterfaces = new ArrayList<>();
 
@@ -31,10 +33,9 @@ public final class Framework {
     private static boolean _isRunning = false;
 
     private Framework(){
-        _availableGames = new ArrayList<>();
-
-        _availableGames.add(TicTacToe.class);
-        _availableGames.add(Zeeslag.class);
+        _availableGames = new HashMap<>();
+        _availableGames.put("Tic Tac Toe", TicTacToe.class);
+        _availableGames.put("Zeeslag", Zeeslag.class);
 
     }
 
@@ -50,7 +51,7 @@ public final class Framework {
         _currentGame = null;
     }
 
-    public static ArrayList<Type> GetAvailableGames(){
+    public static HashMap<String, Type> GetAvailableGames(){
 
         return _availableGames;
 
@@ -95,7 +96,12 @@ public final class Framework {
         }
 
         // find supported games
-        for (Type t : _availableGames){
+
+        Set<String> keys = _availableGames.keySet();
+
+        for (String k : keys){
+            Type t = _availableGames.get(k);
+
             if (t == game){
                 _currentGame = (IGame) Class.forName(t.getTypeName()).getDeclaredConstructor().newInstance();
             }
