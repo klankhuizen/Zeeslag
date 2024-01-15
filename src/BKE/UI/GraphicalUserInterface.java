@@ -19,8 +19,12 @@ public class GraphicalUserInterface implements IUserInterface {
     @Override
     public void Start() {
         if (_frame == null){
-            _frame = new JFrame(Framework.GetCurrentGame().GetGameName());
+
+            _frame = new JFrame("");
+
         }
+
+        UpdateTitle();
 
         _frame.getContentPane().removeAll();
 
@@ -30,6 +34,19 @@ public class GraphicalUserInterface implements IUserInterface {
         BoxLayout layoutOne = new BoxLayout(_frame.getContentPane(), BoxLayout.Y_AXIS);
 
         _frame.setLayout(layoutOne);
+
+        InitializeBoards();
+
+        CreateMenuBar();
+
+        _frame.setVisible(true);
+
+    }
+
+    private void InitializeBoards(){
+
+       if (Framework.GetCurrentGame() == null) return;
+
 
         IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
         IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
@@ -50,11 +67,17 @@ public class GraphicalUserInterface implements IUserInterface {
         _frame.getContentPane().add(txtPlayerTwo);
         _frame.getContentPane().add(_playerTwo);
 
-        CreateMenuBar();
-
-        _frame.setVisible(true);
-
         Framework.GetCurrentGame().RequestUpdate();
+
+    }
+
+    private void UpdateTitle(){
+        String title = "NO GAME SELECTED";
+        if (Framework.GetCurrentGame() != null){
+            title = Framework.GetCurrentGame().GetGameName();
+        }
+
+        _frame.setTitle(title);
     }
 
     public void UpdateFields(int[][] playerOneField, int[][] playerTwoField){

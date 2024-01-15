@@ -65,6 +65,7 @@ public final class Framework {
         });
         _gameThread.start();
 
+        CreateGraphicalUI();
         CreateConsoleUI();
 
         return _gameThread;
@@ -97,7 +98,6 @@ public final class Framework {
         _currentGame.initialize();
         _currentGame.start();
 
-        CreateGraphicalUI();
         for (IUserInterface uInf : userInterfaces){
             new Thread(uInf::Start).start();
         }
