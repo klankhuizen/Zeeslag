@@ -147,8 +147,42 @@ public class Board implements IBoard {
         char colNaam = (char) ('A' + col);
 
         return colNaam + Integer.toString(row + 1);
+    }
 
+    public void plaatsSchepen() {
+        Random random = new Random();
 
+        // Hier worden de schip sizes gedefineerd
+        // Dit kan eventueel ook later gelinked worden aan namen
+        int[] shipSizes = {2, 2, 3, 4, 5};
+
+        for (int grootte : shipSizes) {
+            int row, col;
+            boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+
+            // Hier checked hij of het ship juist geplaatst wordt
+            do {
+                row = random.nextInt(8);
+                col = random.nextInt(8);
+            } while (!isValidPosition(row, col) || !juistePositieVoorSchip(row, col, grootte, horizontaal));
+
+            plaatsSchipOpBord(row, col, grootte, horizontaal);
+        }
+    }
+
+    private void plaatsSchipOpBord(int row, int col, int grootte, boolean horizontaal) {
+        // Hier gaat het ship horizontaal via col
+        if (horizontaal) {
+            for (int i = 0; i < grootte; i++) {
+                veld[row][col + i] = 'O';
+            }
+        }
+        // Hier gaat het ship verticaal via row
+        else {
+            for (int i = 0; i < grootte; i++) {
+                veld[row + i][col] = 'O';
+            }
+        }
     }
 }
 
