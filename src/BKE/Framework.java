@@ -9,6 +9,7 @@ import BKE.UI.GraphicalUserInterface;
 import BKE.UI.IUserInterface;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
@@ -19,7 +20,7 @@ public final class Framework {
 
     private static IGame _currentGame;
 
-    private static ArrayList<IGame> _availableGames;
+    private static ArrayList<Type> _availableGames;
 
     private static final ArrayList<IUserInterface> userInterfaces = new ArrayList<>();
 
@@ -30,6 +31,11 @@ public final class Framework {
     private static boolean _isRunning = false;
 
     private Framework(){
+        _availableGames = new ArrayList<>();
+
+        _availableGames.add(TicTacToe.class);
+        _availableGames.add(Zeeslag.class);
+
     }
 
     public static IGame GetCurrentGame(){
@@ -37,8 +43,17 @@ public final class Framework {
     }
 
     public static void UnloadCurrentGame() throws IOException {
+
+        if (_currentGame == null) return;
+
         _currentGame.close();
         _currentGame = null;
+    }
+
+    public static ArrayList<Type> GetAvailableGames(){
+
+        return _availableGames;
+
     }
 
     public static Thread Start(){
@@ -71,7 +86,7 @@ public final class Framework {
         return _gameThread;
     }
 
-    public static void LoadGame(Type game, boolean networked) throws IllegalArgumentException, IOException {
+    public static void LoadGame(Type game, boolean networked) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // load the game
 
@@ -79,21 +94,12 @@ public final class Framework {
             _currentGame.close();
         }
 
-        switch( game.getTypeName() ){
-
-            case "BKE.Game.Variants.Zeeslag":
-                _currentGame = new Zeeslag();
-
-                break;
-
-            case "BKE.Game.Variants.TicTacToe":
-                _currentGame = new TicTacToe();
-                break;
-
-            default:
-                throw new IllegalArgumentException("Undefined game: " + game.getTypeName() );
+        // find supported games
+        for (Type t : _availableGames){
+            if (t == game){
+                _currentGame = (IGame) Class.forName(t.getTypeName()).getDeclaredConstructor().newInstance();
+            }
         }
-
 
         _currentGame.initialize();
         _currentGame.start();

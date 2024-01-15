@@ -8,6 +8,7 @@ import BKE.UI.GUI.BattleShipPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class GraphicalUserInterface implements IUserInterface {
 
@@ -51,7 +52,6 @@ public class GraphicalUserInterface implements IUserInterface {
         IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
         IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
         _playerOne = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
-//            System.out.println("PLAYERONE " + x + "," + y);
             Framework.GetCurrentGame().HandleInput(y+1 + "" + ((char)(x + 'A')) );
         });
         _playerTwo = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
@@ -90,8 +90,12 @@ public class GraphicalUserInterface implements IUserInterface {
 
         JMenu menu = new JMenu("Menu");
 
+        JMenu gameMenu = new JMenu("Game");
+
         JMenuItem menuItemNG = new JMenuItem("New Game");
         JMenuItem menuItemClose = new JMenuItem("Close");
+
+
 
         menuItemNG.addActionListener(e -> {
 
@@ -102,7 +106,16 @@ public class GraphicalUserInterface implements IUserInterface {
                 IGame currentGame = Framework.GetCurrentGame();
 
                 Framework.UnloadCurrentGame();
-                Framework.LoadGame(currentGame.getClass(), currentGame.getIsNetworked());
+                try {
+
+                    if (currentGame == null){
+                        return;
+                    }
+
+                    Framework.LoadGame(currentGame.getClass(), currentGame.getIsNetworked());
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
 
             } catch (IOException ex) {
                 throw new RuntimeException(ex);

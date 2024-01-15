@@ -6,6 +6,7 @@ import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -141,7 +142,7 @@ public class ConsoleUserInterface implements IUserInterface {
          * @param message user input
          * @throws IOException Error with game
          */
-        private void handleOutOfGameInput(String message) throws IOException {
+        private void handleOutOfGameInput(String message) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
             if (message.length() == 1) {
                 char choice = message.charAt(0);
                 switch (choice){
