@@ -1,16 +1,19 @@
 package BKE.Game.Variants;
 
 import BKE.ApplicationState;
+import BKE.Framework;
 import BKE.Game.Board;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Zeeslag implements IGame {
 
+    private final String _name = "ZEESLAG";
     private ApplicationState _state;
     private IBoard _playerBoard;
     private IBoard _opponentBoard;
@@ -20,6 +23,22 @@ public class Zeeslag implements IGame {
     private int _columnSelection;
 
     private Thread _thread;
+
+    public enum FieldValues {
+
+        // This is some bullshit, Java!
+        EMPTY(0), HIT(1), MISS(2), SHIP(3);
+
+        private final int value;
+        private FieldValues(int val){
+            this.value = val;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+    }
 
     @Override
     public void start() {
@@ -34,18 +53,14 @@ public class Zeeslag implements IGame {
 
         _thread = new Thread(() -> {
             // Schepen voor speler plaatsen
-            plaatsSchipRandom(_playerBoard);
+            plaatsSchepen(_playerBoard);
 
             // Schepen voor tegenstander plaatsen
-            plaatsSchipRandom(_opponentBoard);
+            plaatsSchepen(_opponentBoard);
 
             // Spelronde
             while (!isGameOver()) {
-                System.out.println("\nJouw bord:");
-                _playerBoard.printBoard();
 
-                System.out.println("\nBord van de tegenstander:");
-                _opponentBoard.printBoard();
 
                 // Beurt van speler
                 try {
@@ -54,13 +69,16 @@ public class Zeeslag implements IGame {
                     throw new RuntimeException(e);
                 }
 
+                Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+
                 // Controleer of het spel voorbij is
-//                if (isGameOver()) {
-//                    break;
-//                }
+                if (isGameOver()) {
+                    break;
+                }
 
                 // Beurt van tegenstander
                 zetTegenstander();
+                Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
             }
 
             // Toon het resultaat
@@ -75,8 +93,8 @@ public class Zeeslag implements IGame {
         System.out.println("Initializing Zeeslag");
 
         // zet bord op
-        _playerBoard = new Board();
-        _opponentBoard = new Board();
+        _playerBoard = new Board(8, 8);
+        _opponentBoard = new Board(8, 8);
         _state = ApplicationState.RUNNING;
     }
 
@@ -87,11 +105,13 @@ public class Zeeslag implements IGame {
         // ongeldige input negeren
         if (!_playerTurn || input == null || input.isEmpty()) return;
 
-        if (_rowSelection == 0 ){
-            _rowSelection = Integer.parseInt(String.valueOf(input.charAt(0)));
-        } else if (_columnSelection < 0) {
-            _columnSelection = input.charAt(0) - 'A';
-        }
+        if (input.length() != 2) return;
+
+        _rowSelection = Integer.parseInt(String.valueOf(input.charAt(0)));
+        _columnSelection = input.charAt(1) - 'A';
+
+        System.out.println("Input: " + input + " translates to " + _rowSelection + " "+ _columnSelection);
+
     }
 
     @Override
@@ -105,8 +125,26 @@ public class Zeeslag implements IGame {
     }
 
     @Override
-    public IBoard GetBoard() {
+    public IBoard GetPlayerBoard() {
         return _playerBoard;
+    }
+
+    public IBoard GetOpponentBoard(){
+        return _opponentBoard;
+    }
+
+    public void RequestUpdate() {
+        Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+    }
+
+    @Override
+    public boolean getIsNetworked() {
+        return false;
+    }
+
+    @Override
+    public String GetGameName() {
+        return  _name;
     }
 
     @Override
@@ -121,24 +159,6 @@ public class Zeeslag implements IGame {
 
     public Zeeslag() {}
 
-    private void plaatsSchipRandom(IBoard board) {
-        Random random = new Random();
-        // Plaatst schepen op willekeurige locaties op het bord
-        for (int i = 1; i <= 5; i++) {
-            int row = random.nextInt(8);
-            int col = random.nextInt(8);
-
-            // Controleer of de willekeurig gekozen positie geldig is
-            // zo niet, probeer opnieuw
-            while (!board.isValidPosition(row, col)) {
-                row = random.nextInt(8);
-                col = random.nextInt(8);
-            }
-
-            board.plaatsSchip(row, col);
-        }
-    }
-
     private void zetSpeler() throws InterruptedException {
         // De speler kan een vak kiezen om op de schieten
         // Dit doet de speler door het nummer en de letter
@@ -149,16 +169,9 @@ public class Zeeslag implements IGame {
         _rowSelection = 0;
 
         System.out.println("Jouw beurt:");
-        System.out.print("Voer de rij in (1-8): ");
-        while (_rowSelection == 0) {
-            Thread.sleep(100);
+        System.out.print("Voer coordinaten in:(1-8 + A-H) (1A, 4D, 8B)");
 
-        }
-
-
-        System.out.print("Voer de kolom in (A-H): ");
-
-        while(_columnSelection < 0){
+        while(_rowSelection == 0 && _columnSelection < 0){
             Thread.sleep(100);
         }
 
@@ -199,50 +212,112 @@ public class Zeeslag implements IGame {
             System.out.println("De tegenstander heeft gemist op positie " + _playerBoard.locatie(row, col));
         }
     }
-/*
-    private boolean vraagOpnieuwSpelen() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Wil je het spel opnieuw spelen? (ja/nee): ");
-        String antwoord = scanner.nextLine().toLowerCase();
-        return antwoord.equals("ja");
-    }
-*/
 
     // schepenGezonken is niet klaar en moet nog gemaakt worden.
     private boolean isGameOver() {
-        return _playerBoard.schepenGezonken() || _opponentBoard.schepenGezonken();
+        return schepenGezonken(_playerBoard) || schepenGezonken(_opponentBoard);
     }
 
     private void Resultaat() {
         System.out.println("Het spel is voorbij!");
 
-        if (_playerBoard.schepenGezonken()) {
+        if (schepenGezonken(_playerBoard)) {
             System.out.println("De tegenstander heeft gewonnen!");
         } else {
             System.out.println("Je hebt gewonnen!");
         }
-
-        /*if (vraagOpnieuwSpelen()) {
-            resetSpel();
-        } else {
-            _state = ApplicationState.HALTED;
-        }*/
     }
-/*
-    private void resetSpel() {
-        // Zet de borden opnieuw op
-        _playerBoard = new Board();
-        _opponentBoard = new Board();
 
-        // Start een nieuwe ronde
-        start();
-    }
-*/
     private void SwitchSides(){
         _playerTurn = !_playerTurn;
         if (_playerTurn){
             System.out.println("Jouw beurt:");
             System.out.print("Voer de rij in (1-8): ");
         }
+    }
+
+    public void plaatsSchepen(IBoard board) {
+        Random random = new Random();
+
+        // Hier worden de schip sizes gedefineerd
+        // Dit kan eventueel ook later gelinked worden aan namen
+        int[] shipSizes = {2, 2, 3, 4, 5};
+
+        for (int grootte : shipSizes) {
+            int row, col;
+            boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+
+            // Hier checked hij of het ship juist geplaatst wordt
+            do {
+                row = random.nextInt(board.getHeight());
+                col = random.nextInt(board.getWidth());
+            } while (!isValidPositionForShip(board, row, col, grootte, horizontaal));
+
+            plaatsSchipOpBord(board, row, col, grootte, horizontaal);
+        }
+    }
+
+    private void plaatsSchipOpBord(IBoard board, int row, int col, int grootte, boolean horizontaal) {
+        // Hier gaat het ship horizontaal via col
+        if (horizontaal) {
+            for (int i = 0; i < grootte; i++) {
+                board.setValue(row, col + i, FieldValues.SHIP.getValue());
+            }
+        }
+        // Hier gaat het ship verticaal via row
+        else {
+            for (int i = 0; i < grootte; i++) {
+                board.setValue(row + i, col, FieldValues.SHIP.getValue());
+            }
+        }
+    }
+
+    private boolean isValidPositionForShip(IBoard board,int row, int col, int size, boolean horizontal){
+        if (!board.isValidPosition(row, col)){
+            return false;
+        }
+        // If the boat is left-to-right, make sure that the column coordinate plus the length of it does not exceed the
+        // width of the playing board.
+        if(horizontal) {
+            if (!board.isValidPosition(row, col + size)) {
+                return false;
+            }
+            for (int i = 0; i < size; i ++){
+                if (board.getValue(row, col + i) != FieldValues.EMPTY.getValue()){
+                    return false;
+                }
+            }
+            return true;
+        }
+        // Do the same for up-to-down
+        if (row + size > board.getHeight() - 1){
+            if (!board.isValidPosition(row + size, col)) {
+                return false;
+            }
+            for (int i = 0; i < size; i ++){
+                if (board.getValue(row + i, col) != FieldValues.EMPTY.getValue()){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean schepenGezonken(IBoard board) {
+
+        int[][] boardData = board.getBoard();
+
+        // Loop door het bord en controleer of er nog 'O' (schepen) aanwezig zijn
+        for (int i = 0; i < board.getWidth(); i++) {
+            for (int j = 0; j < board.getHeight(); j++) {
+                if (boardData[i][j] == Zeeslag.FieldValues.SHIP.getValue()) {
+                    // Er is nog minstens één schip aanwezig
+                    return false;
+                }
+            }
+        }
+        // Alle schepen zijn gezonken
+        return true;
+
     }
 }

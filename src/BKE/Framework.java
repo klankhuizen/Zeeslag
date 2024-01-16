@@ -5,12 +5,15 @@ import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Network.INetworkClient;
 import BKE.UI.ConsoleUserInterface;
+import BKE.UI.GraphicalUserInterface;
 import BKE.UI.IUserInterface;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Set;
 
 public final class Framework {
 
@@ -19,9 +22,9 @@ public final class Framework {
 
     private static IGame _currentGame;
 
-    private static ArrayList<IGame> _availableGames;
+    private static HashMap<String, Type> _availableGames;
 
-    private static IUserInterface _userInterface;
+    private static final ArrayList<IUserInterface> userInterfaces = new ArrayList<>();
 
     private static Thread _gameThread;
 
@@ -30,6 +33,10 @@ public final class Framework {
     private static boolean _isRunning = false;
 
     private Framework(){
+        _availableGames = new HashMap<>();
+        _availableGames.put("Tic Tac Toe", TicTacToe.class);
+        _availableGames.put("Zeeslag", Zeeslag.class);
+
     }
 
     public static IGame GetCurrentGame(){
@@ -37,8 +44,17 @@ public final class Framework {
     }
 
     public static void UnloadCurrentGame() throws IOException {
+
+        if (_currentGame == null) return;
+
         _currentGame.close();
         _currentGame = null;
+    }
+
+    public static HashMap<String, Type> GetAvailableGames(){
+
+        return _availableGames;
+
     }
 
     public static Thread Start(){
@@ -64,12 +80,14 @@ public final class Framework {
             }
         });
         _gameThread.start();
-        _userInterface = new ConsoleUserInterface();
-        _userInterface.Start();
+
+        CreateGraphicalUI();
+        CreateConsoleUI();
+
         return _gameThread;
     }
 
-    public static void LoadGame(Type game, boolean networked) throws IllegalArgumentException, IOException {
+    public static void LoadGame(Type game, boolean networked) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // load the game
 
@@ -77,23 +95,57 @@ public final class Framework {
             _currentGame.close();
         }
 
-        switch( game.getTypeName() ){
+        // find supported games
 
-            case "BKE.Game.Variants.Zeeslag":
-                _currentGame = new Zeeslag();
-                break;
+        Set<String> keys = _availableGames.keySet();
 
-            case "BKE.Game.Variants.TicTacToe":
-                _currentGame = new TicTacToe();
-                break;
+        for (String k : keys){
+            Type t = _availableGames.get(k);
 
-            default:
-                throw new IllegalArgumentException("Undefined game: " + game.getTypeName() );
+            if (t == game){
+                _currentGame = (IGame) Class.forName(t.getTypeName()).getDeclaredConstructor().newInstance();
+            }
         }
-
 
         _currentGame.initialize();
         _currentGame.start();
+
+        for (IUserInterface uInf : userInterfaces){
+            new Thread(uInf::Start).start();
+        }
+
+
+    }
+
+    private static void CreateConsoleUI(){
+        for (IUserInterface userInterface : userInterfaces){
+            if (userInterface instanceof ConsoleUserInterface){
+                return;
+            }
+        }
+
+        IUserInterface iFace = new ConsoleUserInterface();
+        userInterfaces.add(iFace);
+        iFace.Start();
+    }
+
+    private static void CreateGraphicalUI(){
+
+        for (IUserInterface userInterface : userInterfaces){
+            if (userInterface instanceof GraphicalUserInterface){
+                return;
+            }
+        }
+
+        IUserInterface iFace = new GraphicalUserInterface();
+        userInterfaces.add(iFace);
+        iFace.Start();
+    }
+
+    public static void UpdateUI(int[][] playerOne, int[][] playerTwo){
+        for (IUserInterface userInterface : userInterfaces) {
+            userInterface.UpdateFields(playerOne, playerTwo);
+        }
     }
 
     public static void Shutdown() {

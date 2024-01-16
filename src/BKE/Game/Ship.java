@@ -1,3 +1,7 @@
+package BKE.Game;
+
+import BKE.Game.Board;
+
 import java.util.ArrayList;
 import java.util.List;
 

@@ -6,9 +6,18 @@ import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ConsoleUserInterface implements IUserInterface {
+
+    private Map<Integer, Character> _printValues = Map.of(
+           Zeeslag.FieldValues.EMPTY.getValue(), '-',
+           Zeeslag.FieldValues.HIT.getValue(), 'X',
+           Zeeslag.FieldValues.MISS.getValue(), 'M',
+           Zeeslag.FieldValues.SHIP.getValue(), 'O'
+    );
 
     private StartupChoiceHandler _inputHandler;
 
@@ -22,6 +31,47 @@ public class ConsoleUserInterface implements IUserInterface {
     public void Start() {
 
         _inputHandler.run();
+    }
+
+    @Override
+    public void UpdateFields(int[][] playerOne, int[][] playerTwo) {
+
+        PrintBoard(playerOne, false);
+        PrintBoard(playerTwo, true);
+
+    }
+
+    public void PrintBoard(int[][] board, boolean showShips){
+        // Hier worden de verschilende vakken letters gegeven (de bovenste rij)
+        // Dit is om het overzichtelijk te maken voor de speler in welk vak hij zijn ship
+        // plaatst en zal op schieten
+        StringBuilder horizontalLegend = new StringBuilder("  ");
+        for (int i = 0; i < board.length; i++){
+            horizontalLegend.append((char)('A' + i)).append(" ");
+        }
+
+        System.out.println(horizontalLegend);
+
+        // Door middel van een loop wordt het bord uit geprint met de actuele informatie
+        for (int i = 0; i < board.length; i++) {
+
+            StringBuilder rowString = new StringBuilder((i + 1 + "")).append(" ");
+
+            for (int j = 0; j < board[0].length; j++) {
+                int value = board[i][j];
+                if (showShips || Zeeslag.FieldValues.SHIP.getValue() != value){
+                    rowString.append(((char)_printValues.get(value))).append(" ");
+                } else{
+                    rowString.append(((char)_printValues.get(Zeeslag.FieldValues.EMPTY.getValue()))).append(" ");
+                }
+
+            }
+
+            System.out.println(rowString);
+
+        }
+
+        System.out.println();
     }
 
     static class StartupChoiceHandler implements Runnable {
@@ -92,7 +142,7 @@ public class ConsoleUserInterface implements IUserInterface {
          * @param message user input
          * @throws IOException Error with game
          */
-        private void handleOutOfGameInput(String message) throws IOException {
+        private void handleOutOfGameInput(String message) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
             if (message.length() == 1) {
                 char choice = message.charAt(0);
                 switch (choice){
