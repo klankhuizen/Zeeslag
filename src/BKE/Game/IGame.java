@@ -38,6 +38,18 @@ public interface IGame extends Closeable {
      * Gets the game board
      * @return Board
      */
-    public IBoard GetBoard();
+    public IBoard GetPlayerBoard();
+    public IBoard GetOpponentBoard();
 
+
+    public void RequestUpdate();
+
+    /**
+     * Returns whether or not the game is networked
+     * @return
+     *
+     */
+    boolean getIsNetworked();
+
+    String GetGameName();
 }

@@ -33,8 +33,28 @@ public class TicTacToe implements IGame {
     }
 
     @Override
-    public IBoard GetBoard() {
+    public IBoard GetPlayerBoard() {
         return null;
+    }
+
+    @Override
+    public IBoard GetOpponentBoard() {
+        return null;
+    }
+
+    @Override
+    public void RequestUpdate() {
+
+    }
+
+    @Override
+    public boolean getIsNetworked() {
+        return false;
+    }
+
+    @Override
+    public String GetGameName() {
+        return "TIC TAC TOE";
     }
 
     @Override
