@@ -2,6 +2,8 @@ package BKE.Game;
 
 import BKE.Game.Variants.Zeeslag;
 
+import java.util.Random;
+
 public class Board implements IBoard {
     private int[][] board;
 
@@ -35,8 +37,7 @@ public class Board implements IBoard {
 
     private boolean juistePositie(int row, int col) {
         // Hier wordt er gekeken of de positie juist is die gekozen werd op het veld
-        return row >= 0 && row < _height && col >= 0 && col < _width && board[row][col] == 0;
-
+        return row >= 0 && row < _height && col >= 0 && col < _width && board[row][col] == Zeeslag.FieldValues.EMPTY.getValue();
     }
 
     public void plaatsSchip(int row, int col) {
@@ -139,6 +140,56 @@ public class Board implements IBoard {
         // Hierdoor kan de locatienaam gegeven worden van een bepaald vak
         char colNaam = (char) ('A' + col);
         return colNaam + Integer.toString(row + 1);
+    }
+
+    public void plaatsSchepen() {
+        Random random = new Random();
+
+        // Hier worden de schip sizes gedefineerd
+        // Dit kan eventueel ook later gelinked worden aan namen
+        int[] shipSizes = {2, 2, 3, 4, 5};
+
+        for (int grootte : shipSizes) {
+            int row, col;
+            boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+
+            // Hier checked hij of het ship juist geplaatst wordt
+            do {
+                row = random.nextInt(8);
+                col = random.nextInt(8);
+            } while (!isValidPosition(row, col) || !isValidPositionForShip(row, col, grootte, horizontaal));
+
+            plaatsSchipOpBord(row, col, grootte, horizontaal);
+        }
+    }
+
+    private void plaatsSchipOpBord(int row, int col, int grootte, boolean horizontaal) {
+        // Hier gaat het ship horizontaal via col
+        if (horizontaal) {
+            for (int i = 0; i < grootte; i++) {
+                board[row][col + i] = Zeeslag.FieldValues.SHIP.getValue();
+            }
+        }
+        // Hier gaat het ship verticaal via row
+        else {
+            for (int i = 0; i < grootte; i++) {
+                board[row + i][col] = Zeeslag.FieldValues.SHIP.getValue();
+            }
+        }
+    }
+
+    private boolean isValidPositionForShip(int row, int col, int size, boolean horizontal){
+
+        if (row < 0 || row > _width || col < 0 || col > _height){
+            return false;
+        }
+
+        // If the boat is left-to-right, make sure that the column coordinate plus the length of it does not exceed the
+        // width of the playing board.
+        if(horizontal && col + size > _width) return false;
+
+        // Do the same for up-to-down
+        return horizontal || row + size <= _height;
     }
 }
 
