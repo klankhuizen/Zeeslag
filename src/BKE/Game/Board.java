@@ -35,15 +35,15 @@ public class Board implements IBoard {
         }
     }
 
-    private boolean juistePositie(int row, int col) {
+    private boolean canPlacePiece(int row, int col) {
         // Hier wordt er gekeken of de positie juist is die gekozen werd op het veld
-        return row >= 0 && row < _height && col >= 0 && col < _width && board[row][col] == Zeeslag.FieldValues.EMPTY.getValue();
+        return isValidPosition(row, col) && board[row][col] == Zeeslag.FieldValues.EMPTY.getValue();
     }
 
     public void plaatsSchip(int row, int col) {
         // Hier wordt er gecontroleerd of de posiitie juist is.
         // Zo ja krijgt de speler een melding dat het plaatsen gelukt is.
-        if (juistePositie(row, col)) {
+        if (canPlacePiece(row, col)) {
             board[row][col] = Zeeslag.FieldValues.SHIP.getValue();
             System.out.println("Schip geplaatst op positie " + locatie(row, col));
         }
@@ -54,24 +54,7 @@ public class Board implements IBoard {
 
     public boolean isValidPosition(int row, int col) {
         // Controleer of de zet binnen het bord valt
-        // Ik weet niet of dit zal werken
-        return row >= 0 && row < _height && col >= 0 && col < _width;
-    }
-
-    @Override
-    public boolean schepenGezonken() {
-        // Loop door het bord en controleer of er nog 'O' (schepen) aanwezig zijn
-        for (int i = 0; i < _width; i++) {
-            for (int j = 0; j < _height; j++) {
-                if (board[i][j] == Zeeslag.FieldValues.SHIP.getValue()) {
-                    // Er is nog minstens één schip aanwezig
-                    return false;
-                }
-            }
-        }
-        // Alle schepen zijn gezonken
-        return true;
-
+        return row > -1 && row < _height && col > -1 && col < _width;
     }
 
     public boolean schiet(int row, int col) {
@@ -101,7 +84,7 @@ public class Board implements IBoard {
 
     @Override
     public int[][] getBoard() {
-        return board;
+        return board.clone(); // Clone because we don't want them to be able to alter the board
     }
 
     @Override
@@ -142,54 +125,19 @@ public class Board implements IBoard {
         return colNaam + Integer.toString(row + 1);
     }
 
-    public void plaatsSchepen() {
-        Random random = new Random();
 
-        // Hier worden de schip sizes gedefineerd
-        // Dit kan eventueel ook later gelinked worden aan namen
-        int[] shipSizes = {2, 2, 3, 4, 5};
 
-        for (int grootte : shipSizes) {
-            int row, col;
-            boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+    @Override
+    public void setValue(int x, int y, int value){
 
-            // Hier checked hij of het ship juist geplaatst wordt
-            do {
-                row = random.nextInt(8);
-                col = random.nextInt(8);
-            } while (!isValidPosition(row, col) || !isValidPositionForShip(row, col, grootte, horizontaal));
-
-            plaatsSchipOpBord(row, col, grootte, horizontaal);
+        if (isValidPosition(x, y)){
+            board[x][y] = value;
         }
     }
 
-    private void plaatsSchipOpBord(int row, int col, int grootte, boolean horizontaal) {
-        // Hier gaat het ship horizontaal via col
-        if (horizontaal) {
-            for (int i = 0; i < grootte; i++) {
-                board[row][col + i] = Zeeslag.FieldValues.SHIP.getValue();
-            }
-        }
-        // Hier gaat het ship verticaal via row
-        else {
-            for (int i = 0; i < grootte; i++) {
-                board[row + i][col] = Zeeslag.FieldValues.SHIP.getValue();
-            }
-        }
-    }
-
-    private boolean isValidPositionForShip(int row, int col, int size, boolean horizontal){
-
-        if (row < 0 || row > _width || col < 0 || col > _height){
-            return false;
-        }
-
-        // If the boat is left-to-right, make sure that the column coordinate plus the length of it does not exceed the
-        // width of the playing board.
-        if(horizontal && col + size > _width) return false;
-
-        // Do the same for up-to-down
-        return horizontal || row + size <= _height;
+    @Override
+    public int getValue(int x, int y) {
+        return board[x][y];
     }
 }
 
