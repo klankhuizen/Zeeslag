@@ -165,4 +165,10 @@ public final class Framework {
         }
         System.out.println("Shutting down...");
     }
+
+    public static void SendMessageToUser(String message){
+        for (IUserInterface userInterface : userInterfaces) {
+           userInterface.SendMessageToUser(message);
+        }
+    }
 }

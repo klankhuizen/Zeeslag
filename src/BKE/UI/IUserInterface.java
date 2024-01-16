@@ -8,4 +8,6 @@ public interface IUserInterface extends Closeable {
 
     public void UpdateFields(int[][] playerOne, int[][] playerTwo);
 
+    public void SendMessageToUser(String message);
+
 }

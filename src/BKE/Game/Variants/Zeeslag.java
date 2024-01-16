@@ -109,9 +109,6 @@ public class Zeeslag implements IGame {
 
         _rowSelection = Integer.parseInt(String.valueOf(input.charAt(0)));
         _columnSelection = input.charAt(1) - 'A';
-
-        System.out.println("Input: " + input + " translates to " + _rowSelection + " "+ _columnSelection);
-
     }
 
     @Override
@@ -149,7 +146,6 @@ public class Zeeslag implements IGame {
 
     @Override
     public void close() throws IOException {
-        System.out.println("Closing Zeeslag");
         if (_thread != null){
             _thread.stop();
             _thread = null;
@@ -168,8 +164,8 @@ public class Zeeslag implements IGame {
         _columnSelection = -1;
         _rowSelection = 0;
 
-        System.out.println("Jouw beurt:");
-        System.out.print("Voer coordinaten in:(1-8 + A-H) (1A, 4D, 8B)");
+        Framework.SendMessageToUser("Jouw beurt:");
+        Framework.SendMessageToUser("Voer coordinaten in:(1-8 + A-H) (1A, 4D, 8B)");
 
         while(_rowSelection == 0 && _columnSelection < 0){
             Thread.sleep(100);
@@ -180,9 +176,9 @@ public class Zeeslag implements IGame {
 
         // Toon de resultaten van het schot aan de speler
         if (hit) {
-            System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
+            Framework.SendMessageToUser("Gefeliciteerd! Je hebt een schip geraakt op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
         } else {
-            System.out.println("Helaas, je hebt gemist op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
+            Framework.SendMessageToUser("Helaas, je hebt gemist op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
         }
 
         // Reset de selecties voor de volgende beurt
@@ -207,9 +203,9 @@ public class Zeeslag implements IGame {
 
         // Toon de resultaten van het schot aan de speler
         if (hit) {
-            System.out.println("De tegenstander heeft een schip geraakt op positie " + _playerBoard.locatie(row, col));
+            Framework.SendMessageToUser("De tegenstander heeft een schip geraakt op positie " + _playerBoard.locatie(row, col));
         } else {
-            System.out.println("De tegenstander heeft gemist op positie " + _playerBoard.locatie(row, col));
+            Framework.SendMessageToUser("De tegenstander heeft gemist op positie " + _playerBoard.locatie(row, col));
         }
     }
 
@@ -219,12 +215,12 @@ public class Zeeslag implements IGame {
     }
 
     private void Resultaat() {
-        System.out.println("Het spel is voorbij!");
+        Framework.SendMessageToUser("Het spel is voorbij!");
 
         if (schepenGezonken(_playerBoard)) {
-            System.out.println("De tegenstander heeft gewonnen!");
+            Framework.SendMessageToUser("De tegenstander heeft gewonnen!");
         } else {
-            System.out.println("Je hebt gewonnen!");
+            Framework.SendMessageToUser("Je hebt gewonnen!");
         }
     }
 

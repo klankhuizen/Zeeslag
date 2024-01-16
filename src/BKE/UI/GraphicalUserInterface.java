@@ -8,6 +8,8 @@ import BKE.UI.GUI.SelectGamePanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -17,6 +19,10 @@ public class GraphicalUserInterface implements IUserInterface {
 
     BattleShipPanel _playerOne;
     BattleShipPanel _playerTwo;
+
+    JTextArea _textArea;
+
+    JScrollPane _textScrollPane;
 
     @Override
     public void Start() {
@@ -34,15 +40,10 @@ public class GraphicalUserInterface implements IUserInterface {
         _frame.setSize(400, 800);
 
         BoxLayout layoutOne = new BoxLayout(_frame.getContentPane(), BoxLayout.Y_AXIS);
-
         _frame.setLayout(layoutOne);
-
         InitializeBoards();
-
         CreateMenuBar();
-
         _frame.setVisible(true);
-
     }
 
     private void InitializeBoards(){
@@ -63,27 +64,50 @@ public class GraphicalUserInterface implements IUserInterface {
         JLabel txtPlayerOne = new JLabel("OPPONENT BOARD");
         JLabel txtPlayerTwo = new JLabel("PLAYER BOARD");
 
+        _textArea = new JTextArea(1,16);
+        JScrollPane _textScrollPane  = new JScrollPane(_textArea);
+
+        _textArea.setLineWrap(true);
+        _textArea.setWrapStyleWord(true);
+        _textArea.setEditable(false);
+
         _frame.getContentPane().add(txtPlayerOne);
         _frame.getContentPane().add(_playerOne);
         _frame.getContentPane().add(txtPlayerTwo);
         _frame.getContentPane().add(_playerTwo);
+        _frame.getContentPane().add(_textScrollPane);
 
         Framework.GetCurrentGame().RequestUpdate();
+
 
     }
 
     private void UpdateTitle(){
-        String title = "NO GAME SELECTED";
-        if (Framework.GetCurrentGame() != null){
-            title = Framework.GetCurrentGame().GetGameName();
-        }
+        SwingUtilities.invokeLater(() -> {
+            String title = "NO GAME SELECTED";
+            if (Framework.GetCurrentGame() != null){
+                title = Framework.GetCurrentGame().GetGameName();
+            }
 
-        _frame.setTitle(title);
+            _frame.setTitle(title);
+        });
+
     }
 
     public void UpdateFields(int[][] playerOneField, int[][] playerTwoField){
-        _playerOne.UpdateField(playerOneField);
-        _playerTwo.UpdateField(playerTwoField);
+        SwingUtilities.invokeLater(() -> {
+            _playerOne.UpdateField(playerOneField);
+            _playerTwo.UpdateField(playerTwoField);
+        });
+    }
+
+    @Override
+    public void SendMessageToUser(String message) {
+        SwingUtilities.invokeLater(() -> {
+            if (_textArea != null){
+                _textArea.append(message + "\n");
+            }
+        });
     }
 
     public void CreateMenuBar(){
@@ -97,7 +121,6 @@ public class GraphicalUserInterface implements IUserInterface {
         JMenuItem menuItemClose = new JMenuItem("Close");
 
         menuItemNG.addActionListener(e -> {
-
             System.out.println("Start New Game");
             SelectGamePanel sgp = new SelectGamePanel();
             sgp.setVisible(true);
