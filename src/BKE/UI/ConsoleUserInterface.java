@@ -74,6 +74,11 @@ public class ConsoleUserInterface implements IUserInterface {
         System.out.println();
     }
 
+    @Override
+    public void close() throws IOException {
+
+    }
+
     static class StartupChoiceHandler implements Runnable {
 
         private Scanner scanner;

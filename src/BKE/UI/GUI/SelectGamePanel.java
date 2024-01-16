@@ -29,10 +29,10 @@ public class SelectGamePanel extends JDialog {
         JPanel lowerButtons = new JPanel();
 
         JButton startGame = new JButton("Start Game");
-        JButton endGame = new JButton("End Game");
+        JButton cancel = new JButton("Cancel");
 
         lowerButtons.add(startGame);
-        lowerButtons.add(endGame);
+        lowerButtons.add(cancel);
         lowerButtons.setLayout(new BoxLayout(lowerButtons, BoxLayout.X_AXIS));
 
         startGame.addActionListener(l -> {
@@ -51,12 +51,15 @@ public class SelectGamePanel extends JDialog {
             }
         });
 
-        endGame.addActionListener(l -> {
+        cancel.addActionListener(l -> {
 
             try {
                 Framework.UnloadCurrentGame();
             } catch(Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                this.setVisible(false);
+                this.dispose();
             }
 
         });

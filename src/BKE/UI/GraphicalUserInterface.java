@@ -93,6 +93,7 @@ public class GraphicalUserInterface implements IUserInterface {
 
         JMenu gameMenu = new JMenu("Game");
         JMenuItem menuItemNG = new JMenuItem("New Game");
+        JMenuItem menuItemCloseGame = new JMenuItem("Stop Game");
         JMenuItem menuItemClose = new JMenuItem("Close");
 
         menuItemNG.addActionListener(e -> {
@@ -102,12 +103,22 @@ public class GraphicalUserInterface implements IUserInterface {
             sgp.setVisible(true);
         });
 
+        menuItemCloseGame.addActionListener(e -> {
+            try {
+                Framework.UnloadCurrentGame();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
         menuItemClose.addActionListener(e -> {
 
             System.out.println("CLOSE GAME");
 
             try {
+
                 Framework.GetCurrentGame().close();
+
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -115,11 +126,22 @@ public class GraphicalUserInterface implements IUserInterface {
         });
 
         menu.add(menuItemNG);
+        menu.add(menuItemCloseGame);
         menu.add(menuItemClose);
 
         menuBar.add(menu);
 
         _frame.setJMenuBar(menuBar);
+    }
+
+    @Override
+    public void close() throws IOException {
+        _playerOne.close();
+        _playerTwo.close();
+        _frame.getContentPane().removeAll();
+        _playerOne = null;
+        _playerTwo = null;
+        _frame.repaint();
     }
 }
 

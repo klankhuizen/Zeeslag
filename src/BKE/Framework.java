@@ -49,6 +49,10 @@ public final class Framework {
 
         _currentGame.close();
         _currentGame = null;
+
+        for (IUserInterface userInterface : userInterfaces) {
+            userInterface.close();
+        }
     }
 
     public static HashMap<String, Type> GetAvailableGames(){

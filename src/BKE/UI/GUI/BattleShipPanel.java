@@ -6,12 +6,14 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class BattleShipPanel extends JPanel {
+public class BattleShipPanel extends JPanel implements Closeable {
 
     /**
      * Matrix with field values, used to determine which color the background of a square should be.
@@ -44,6 +46,8 @@ public class BattleShipPanel extends JPanel {
      */
     private BiConsumer _callback;
 
+    private MouseInputAdapter mouseInputAdapter = null;
+
     /**
      * Map of the different colors used per field value
      */
@@ -69,13 +73,16 @@ public class BattleShipPanel extends JPanel {
         _matrix = new int[numHorizontal][numVertical];
         _callback = callback;
         _showShips = showShips;
-        this.addMouseListener(new MouseInputAdapter() {
+
+        mouseInputAdapter = new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 OnMouseClicked(e.getX(), e.getY());
             }
-        });
+        };
+
+        this.addMouseListener(mouseInputAdapter);
     }
 
     /**
@@ -148,4 +155,15 @@ public class BattleShipPanel extends JPanel {
             }
         }
     }
+
+
+    @Override
+    public void close(){
+        if (mouseInputAdapter != null){
+            this.removeMouseListener(mouseInputAdapter);
+            mouseInputAdapter = null;
+        }
+
+    }
+
 }
