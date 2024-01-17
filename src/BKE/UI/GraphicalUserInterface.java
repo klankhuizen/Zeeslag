@@ -15,14 +15,25 @@ import java.lang.reflect.InvocationTargetException;
 
 public class GraphicalUserInterface implements IUserInterface {
 
+    /**
+     * The frame
+     */
     JFrame _frame;
 
+    /**
+     * Player one pane
+     */
     BattleShipPanel _playerOne;
+
+    /**
+     * Player two pane
+     */
     BattleShipPanel _playerTwo;
 
+    /**
+     * The text area to display status messages from the game.
+     */
     JTextArea _textArea;
-
-    JScrollPane _textScrollPane;
 
     @Override
     public void Start() {
@@ -49,8 +60,6 @@ public class GraphicalUserInterface implements IUserInterface {
     private void InitializeBoards(){
 
        if (Framework.GetCurrentGame() == null) return;
-
-
         IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
         IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
         _playerOne = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
@@ -59,8 +68,6 @@ public class GraphicalUserInterface implements IUserInterface {
         _playerTwo = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
             System.out.println("PLAYERTWO " + x + "," + y);
         });
-
-
         JLabel txtPlayerOne = new JLabel("OPPONENT BOARD");
         JLabel txtPlayerTwo = new JLabel("PLAYER BOARD");
 
@@ -78,10 +85,11 @@ public class GraphicalUserInterface implements IUserInterface {
         _frame.getContentPane().add(_textScrollPane);
 
         Framework.GetCurrentGame().RequestUpdate();
-
-
     }
 
+    /**
+     * Update the title of the window
+     */
     private void UpdateTitle(){
         SwingUtilities.invokeLater(() -> {
             String title = "NO GAME SELECTED";
@@ -94,6 +102,11 @@ public class GraphicalUserInterface implements IUserInterface {
 
     }
 
+    /**
+     * Update the fields on the game
+     * @param playerOneField Player one field matrix
+     * @param playerTwoField Player two field matrix
+     */
     public void UpdateFields(int[][] playerOneField, int[][] playerTwoField){
         SwingUtilities.invokeLater(() -> {
             _playerOne.UpdateField(playerOneField);
@@ -115,7 +128,6 @@ public class GraphicalUserInterface implements IUserInterface {
 
         JMenu menu = new JMenu("Menu");
 
-        JMenu gameMenu = new JMenu("Game");
         JMenuItem menuItemNG = new JMenuItem("New Game");
         JMenuItem menuItemCloseGame = new JMenuItem("Stop Game");
         JMenuItem menuItemClose = new JMenuItem("Close");
