@@ -6,10 +6,9 @@ import BKE.Game.Board;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 
-import java.awt.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Zeeslag implements IGame {
 
@@ -18,6 +17,12 @@ public class Zeeslag implements IGame {
     private IBoard _playerBoard;
     private IBoard _opponentBoard;
 
+    private Offset[] _boatOffsetChecks = {
+            new Offset(-1, 0),
+            new Offset(1, 0),
+            new Offset(0, -1),
+            new Offset(0, 1)
+    };
     private boolean _playerTurn;
     private int _rowSelection;
     private int _columnSelection;
@@ -38,6 +43,14 @@ public class Zeeslag implements IGame {
             return value;
         }
 
+    }
+
+    private class Offset{
+        int X = 0, Y = 0;
+        public Offset(int x, int y){
+            X = x;
+            Y = y;
+        }
     }
 
     @Override
@@ -238,19 +251,46 @@ public class Zeeslag implements IGame {
         // Hier worden de schip sizes gedefineerd
         // Dit kan eventueel ook later gelinked worden aan namen
         int[] shipSizes = {2, 2, 3, 4, 5};
+        int totalsquares = Arrays.stream(shipSizes).sum();
+        int attempts = 0;
+        boolean valid = false;
 
-        for (int grootte : shipSizes) {
-            int row, col;
-            boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+        do {
+            attempts ++;
+            int placedSquares = 0;
+            for (int grootte : shipSizes) {
+                int row, col;
+                boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+                int cycles = 0;
 
-            // Hier checked hij of het ship juist geplaatst wordt
-            do {
-                row = random.nextInt(board.getHeight());
-                col = random.nextInt(board.getWidth());
-            } while (!isValidPositionForShip(board, row, col, grootte, horizontaal));
+                // Hier checked hij of het ship juist geplaatst wordt
+                do {
+                    row = random.nextInt(board.getHeight());
+                    col = random.nextInt(board.getWidth());
+                    cycles ++;
+                } while (!isValidPositionForShip(board, row, col, grootte, horizontaal) && cycles < 100);
 
-            plaatsSchipOpBord(board, row, col, grootte, horizontaal);
-        }
+                // Will attempt 100 times... After that, probably impossible...
+                if (cycles > 99){
+                    // Invalid
+                    break;
+                }
+
+                plaatsSchipOpBord(board, row, col, grootte, horizontaal);
+                placedSquares += grootte;
+            }
+
+            if (totalsquares != placedSquares){
+                board.Clear();
+                System.out.println("Invalid config, attempt " + attempts);
+                continue;
+            }
+
+
+            valid = true;
+        } while (!valid);
+
+
     }
 
     private void plaatsSchipOpBord(IBoard board, int row, int col, int grootte, boolean horizontaal) {
@@ -275,28 +315,50 @@ public class Zeeslag implements IGame {
         // If the boat is left-to-right, make sure that the column coordinate plus the length of it does not exceed the
         // width of the playing board.
         if(horizontal) {
-            if (!board.isValidPosition(row, col + size)) {
+            if (!board.isValidPosition(row, col + size) ) {
                 return false;
             }
             for (int i = 0; i < size; i ++){
                 if (board.getValue(row, col + i) != FieldValues.EMPTY.getValue()){
                     return false;
                 }
+
+                if (HasNeighbors(board, row, col + i)) return false;
+
             }
             return true;
         }
         // Do the same for up-to-down
-        if (row + size > board.getHeight() - 1){
-            if (!board.isValidPosition(row + size, col)) {
+        if (row + size < board.getHeight()){
+            if (!board.isValidPosition(row + size, col) ) {
                 return false;
             }
             for (int i = 0; i < size; i ++){
                 if (board.getValue(row + i, col) != FieldValues.EMPTY.getValue()){
                     return false;
                 }
+
+
+                if (HasNeighbors(board, row + i, col)) return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean HasNeighbors(IBoard board, int row, int col){
+        // Check left, right, up and down of this coordinate to see if there is a ship there.
+        for(Offset offset : _boatOffsetChecks){
+            int x = row + offset.X;
+            int y = col + offset.Y;
+
+            // If the coordinate to check is outside of bounds, we don't have to check it.
+            if (!board.isValidPosition(x, y)) continue;
+            if (board.getValue(x, y) != FieldValues.EMPTY.getValue()){
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private boolean schepenGezonken(IBoard board) {

@@ -53,4 +53,6 @@ public interface IBoard {
      * @return int value
      */
     int getValue(int x, int y);
+
+    void Clear();
 }
