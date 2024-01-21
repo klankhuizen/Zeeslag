@@ -49,6 +49,10 @@ public final class Framework {
 
         _currentGame.close();
         _currentGame = null;
+
+        for (IUserInterface userInterface : userInterfaces) {
+            userInterface.close();
+        }
     }
 
     public static HashMap<String, Type> GetAvailableGames(){
@@ -160,5 +164,11 @@ public final class Framework {
             }
         }
         System.out.println("Shutting down...");
+    }
+
+    public static void SendMessageToUser(String message){
+        for (IUserInterface userInterface : userInterfaces) {
+           userInterface.SendMessageToUser(message);
+        }
     }
 }

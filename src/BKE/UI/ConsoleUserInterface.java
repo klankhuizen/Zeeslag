@@ -41,6 +41,11 @@ public class ConsoleUserInterface implements IUserInterface {
 
     }
 
+    @Override
+    public void SendMessageToUser(String message) {
+        System.out.println(message);
+    }
+
     public void PrintBoard(int[][] board, boolean showShips){
         // Hier worden de verschilende vakken letters gegeven (de bovenste rij)
         // Dit is om het overzichtelijk te maken voor de speler in welk vak hij zijn ship
@@ -72,6 +77,11 @@ public class ConsoleUserInterface implements IUserInterface {
         }
 
         System.out.println();
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 
     static class StartupChoiceHandler implements Runnable {
