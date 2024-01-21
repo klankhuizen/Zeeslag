@@ -301,7 +301,7 @@ public class Zeeslag implements IGame {
             return true;
         }
         // Do the same for up-to-down
-        if (row + size > board.getHeight() - 1){
+        if (row + size < board.getHeight()){
             if (!board.isValidPosition(row + size, col) ) {
                 return false;
             }
@@ -313,8 +313,9 @@ public class Zeeslag implements IGame {
 
                 if (HasNeighbors(board, row + i, col)) return false;
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean HasNeighbors(IBoard board, int row, int col){
