@@ -7,6 +7,7 @@ import BKE.Game.IBoard;
 import BKE.Game.IGame;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Zeeslag implements IGame {
@@ -250,19 +251,46 @@ public class Zeeslag implements IGame {
         // Hier worden de schip sizes gedefineerd
         // Dit kan eventueel ook later gelinked worden aan namen
         int[] shipSizes = {2, 2, 3, 4, 5};
+        int totalsquares = Arrays.stream(shipSizes).sum();
+        int attempts = 0;
+        boolean valid = false;
 
-        for (int grootte : shipSizes) {
-            int row, col;
-            boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+        do {
+            attempts ++;
+            int placedSquares = 0;
+            for (int grootte : shipSizes) {
+                int row, col;
+                boolean horizontaal = random.nextBoolean(); // Random ligging van ship
+                int cycles = 0;
 
-            // Hier checked hij of het ship juist geplaatst wordt
-            do {
-                row = random.nextInt(board.getHeight());
-                col = random.nextInt(board.getWidth());
-            } while (!isValidPositionForShip(board, row, col, grootte, horizontaal));
+                // Hier checked hij of het ship juist geplaatst wordt
+                do {
+                    row = random.nextInt(board.getHeight());
+                    col = random.nextInt(board.getWidth());
+                    cycles ++;
+                } while (!isValidPositionForShip(board, row, col, grootte, horizontaal) && cycles < 100);
 
-            plaatsSchipOpBord(board, row, col, grootte, horizontaal);
-        }
+                // Will attempt 100 times... After that, probably impossible...
+                if (cycles > 99){
+                    // Invalid
+                    break;
+                }
+
+                plaatsSchipOpBord(board, row, col, grootte, horizontaal);
+                placedSquares += grootte;
+            }
+
+            if (totalsquares != placedSquares){
+                board.Clear();
+                System.out.println("Invalid config, attempt " + attempts);
+                continue;
+            }
+
+
+            valid = true;
+        } while (!valid);
+
+
     }
 
     private void plaatsSchipOpBord(IBoard board, int row, int col, int grootte, boolean horizontaal) {

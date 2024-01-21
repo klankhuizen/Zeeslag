@@ -139,5 +139,10 @@ public class Board implements IBoard {
     public int getValue(int x, int y) {
         return board[x][y];
     }
+
+    @Override
+    public void Clear() {
+        board = new int[_width][_height];
+    }
 }
 
