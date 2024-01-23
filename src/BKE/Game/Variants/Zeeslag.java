@@ -95,7 +95,7 @@ public class Zeeslag implements IGame {
             }
 
             // Toon het resultaat
-            Resultaat();
+            resultaat();
         });
 
         _thread.start();
@@ -185,7 +185,7 @@ public class Zeeslag implements IGame {
         }
 
         // Voer het schot uit op het bord van de tegenstander
-        boolean hit = _opponentBoard.schiet(_rowSelection - 1, _columnSelection);
+        boolean hit = schiet(_opponentBoard, _rowSelection - 1, _columnSelection);
 
         // Toon de resultaten van het schot aan de speler
         if (hit) {
@@ -209,10 +209,8 @@ public class Zeeslag implements IGame {
             col = random.nextInt(8);
         } while (!_playerBoard.isValidPosition(row, col));
 
-        char colChar = (char) ('A' + col);
-
         // Voer het schot uit op het bord van de speler
-        boolean hit = _playerBoard.schiet(row, col);
+        boolean hit = schiet(_playerBoard, row, col);
 
         // Toon de resultaten van het schot aan de speler
         if (hit) {
@@ -222,12 +220,11 @@ public class Zeeslag implements IGame {
         }
     }
 
-    // schepenGezonken is niet klaar en moet nog gemaakt worden.
     private boolean isGameOver() {
         return schepenGezonken(_playerBoard) || schepenGezonken(_opponentBoard);
     }
 
-    private void Resultaat() {
+    private void resultaat() {
         Framework.SendMessageToUser("Het spel is voorbij!");
 
         if (schepenGezonken(_playerBoard)) {
@@ -237,21 +234,13 @@ public class Zeeslag implements IGame {
         }
     }
 
-    private void SwitchSides(){
-        _playerTurn = !_playerTurn;
-        if (_playerTurn){
-            System.out.println("Jouw beurt:");
-            System.out.print("Voer de rij in (1-8): ");
-        }
-    }
-
     public void plaatsSchepen(IBoard board) {
         Random random = new Random();
 
         // Hier worden de schip sizes gedefineerd
         // Dit kan eventueel ook later gelinked worden aan namen
         int[] shipSizes = {2, 2, 3, 4, 5};
-        int totalsquares = Arrays.stream(shipSizes).sum();
+        int totalsquares = Arrays.stream(shipSizes).sum(); // get a sum of all the items in the array.
         int attempts = 0;
         boolean valid = false;
 
@@ -280,8 +269,9 @@ public class Zeeslag implements IGame {
                 placedSquares += grootte;
             }
 
+            // The combination is invalid, start over.
             if (totalsquares != placedSquares){
-                board.Clear();
+                board.clear();
                 System.out.println("Invalid config, attempt " + attempts);
                 continue;
             }
@@ -377,5 +367,69 @@ public class Zeeslag implements IGame {
         // Alle schepen zijn gezonken
         return true;
 
+    }
+
+    public void plaatsSchip(IBoard board, int row, int col) {
+        // Hier wordt er gecontroleerd of de posiitie juist is.
+        // Zo ja krijgt de speler een melding dat het plaatsen gelukt is.
+        if (canPlacePiece(board, row, col)) {
+            board.setValue(row, col, Zeeslag.FieldValues.SHIP.getValue());
+            System.out.println("Schip geplaatst op positie " + board.locatie(row, col));
+        }
+        else {
+            System.out.println("je kan hier geen schip plaatsen");
+        }
+    }
+
+    private boolean canPlacePiece(IBoard board, int row, int col) {
+        // Hier wordt er gekeken of de positie juist is die gekozen werd op het veld
+        return board.isValidPosition(row, col) && board.getValue(row, col) == Zeeslag.FieldValues.EMPTY.getValue();
+    }
+
+    public boolean schiet(IBoard board, int row, int col) {
+        // Controleer of de zet binnen het bord valt
+        if (!board.isValidPosition(row, col)) {
+            System.out.println("Ongeldige positie. Probeer opnieuw.");
+            return false;
+        }
+
+        // Controleer of er een schip op de opgegeven positie is
+        if (board.getValue(row, col) == Zeeslag.FieldValues.SHIP.getValue()) {
+            board.setValue(row, col,Zeeslag.FieldValues.HIT.getValue()); // Markeer het getroffen schip
+            System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + board.locatie(row, col));
+            // Controleert of het schip is gezonken
+            if (isSchipGezonken(board, row, col)) {
+                System.out.println("Helaas, je schip is gezonken op positie " + board.locatie(row, col));
+            }
+            return true;
+        } else if (board.getValue(row, col) == Zeeslag.FieldValues.EMPTY.getValue()) {
+            board.setValue(row, col, Zeeslag.FieldValues.MISS.getValue()); // Markeer de gemiste schoten
+            System.out.println("Helaas, je hebt gemist op positie " + board.locatie(row, col));
+        } else {
+            System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
+        }
+        return false;
+    }
+
+    private boolean isSchipGezonken(IBoard board, int row, int col) {
+        // Controleer horizontaal
+        int countHorizontaal = 0;
+        for (int j = 0; j < 8; j++) {
+            if (board.getValue(row, j) == Zeeslag.FieldValues.HIT.getValue()) {
+                countHorizontaal++;
+            }
+        }
+
+        // Controleer verticaal
+        int countVerticaal = 0;
+        for (int i = 0; i < 8; i++) {
+            if (board.getValue(i, col) == Zeeslag.FieldValues.HIT.getValue()) {
+                countVerticaal++;
+            }
+        }
+
+        // Als alle vakjes van het schip zijn geraakt, is het schip gezonken
+        // TODO This needs to be different
+        return countHorizontaal == 5 || countVerticaal == 5;
     }
 }
