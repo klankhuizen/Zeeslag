@@ -3,7 +3,6 @@ package BKE;
 import BKE.Game.IGame;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
-import BKE.Network.Command.DisconnectCommand;
 import BKE.Network.Command.GetGamesCommand;
 import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
@@ -31,6 +30,8 @@ public final class Framework {
     private static final ArrayList<IUserInterface> userInterfaces = new ArrayList<>();
 
     private static Thread _gameThread;
+
+    private static Thread _networkThread;
 
     private static INetworkClient _networkedClient;
 
@@ -86,11 +87,6 @@ public final class Framework {
             }
         });
         _gameThread.start();
-        try {
-            StartNetwork("127.0.0.1", 7789);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         CreateGraphicalUI();
         CreateConsoleUI();
 
@@ -179,38 +175,47 @@ public final class Framework {
         }
     }
 
-    public static void StartNetwork(String host, int port) throws IOException, InterruptedException {
+    public static void StartNetwork(String host, int port, String userName) throws IOException, InterruptedException {
 
-        if (_networkedClient != null && _networkedClient.status() == 1){
-            _networkedClient.disconnect();
+        if (_networkThread != null && _networkThread.isAlive()){
+            _networkThread.interrupt();
+            _networkThread = null;
         }
 
+        _networkThread = new Thread(() -> {
 
-        _networkedClient = new NetworkClient();
-        _networkedClient.connect(host, port);
+            try {
+                if (_networkedClient != null && _networkedClient.status() == 1){
+                    _networkedClient.disconnect();
+                }
 
-        // find games
 
-        String[] games =  _networkedClient.send(new GetGamesCommand());
+                _networkedClient = new NetworkClient();
+                _networkedClient.connect(host, port);
 
-        for (String game : games ) {
-            System.out.println(game);
-        }
+                // find games
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+                String[] games =  _networkedClient.send(new GetGamesCommand());
 
-        _networkedClient.send(new LoginCommand("Kevin"));
+                for (String game : games ) {
+                    System.out.println(game);
+                }
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
-        _networkedClient.disconnect();
+                _networkedClient.send(new LoginCommand(userName));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        _networkThread.start();
+
     }
 }

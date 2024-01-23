@@ -4,6 +4,7 @@ import BKE.Framework;
 import BKE.Game.IBoard;
 import BKE.UI.GUI.BattleShipPanel;
 import BKE.UI.GUI.SelectGamePanel;
+import BKE.UI.GUI.ServerConnectionPanel;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -37,11 +38,8 @@ public class GraphicalUserInterface implements IUserInterface {
             _frame = new JFrame("");
 
         }
-
         UpdateTitle();
-
         _frame.getContentPane().removeAll();
-
         _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         _frame.setSize(400, 800);
 
@@ -123,9 +121,14 @@ public class GraphicalUserInterface implements IUserInterface {
 
         JMenu menu = new JMenu("Menu");
 
+        JMenu networkMenu = new JMenu("Network");
+
         JMenuItem menuItemNG = new JMenuItem("New Game");
         JMenuItem menuItemCloseGame = new JMenuItem("Stop Game");
         JMenuItem menuItemClose = new JMenuItem("Close");
+
+        JMenuItem menuItemConnectToServer = new JMenuItem("Connect...");
+        JMenuItem menuItemDisconnectFromServer = new JMenuItem("Disconnect");
 
         menuItemNG.addActionListener(e -> {
             System.out.println("Start New Game");
@@ -155,11 +158,24 @@ public class GraphicalUserInterface implements IUserInterface {
 
         });
 
+        menuItemConnectToServer.addActionListener(e -> {
+            ServerConnectionPanel svp = new ServerConnectionPanel();
+            svp.setVisible(true);
+        });
+
+        menuItemDisconnectFromServer.addActionListener(e -> {
+
+        });
+
         menu.add(menuItemNG);
         menu.add(menuItemCloseGame);
         menu.add(menuItemClose);
 
+        networkMenu.add(menuItemConnectToServer);
+        networkMenu.add(menuItemDisconnectFromServer);
+
         menuBar.add(menu);
+        menuBar.add(networkMenu);
 
         _frame.setJMenuBar(menuBar);
     }
