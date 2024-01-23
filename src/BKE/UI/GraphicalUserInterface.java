@@ -2,16 +2,11 @@ package BKE.UI;
 
 import BKE.Framework;
 import BKE.Game.IBoard;
-import BKE.Game.IGame;
 import BKE.UI.GUI.BattleShipPanel;
 import BKE.UI.GUI.SelectGamePanel;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 public class GraphicalUserInterface implements IUserInterface {
 

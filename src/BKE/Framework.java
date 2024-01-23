@@ -3,7 +3,11 @@ package BKE;
 import BKE.Game.IGame;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
+import BKE.Network.Command.DisconnectCommand;
+import BKE.Network.Command.GetGamesCommand;
+import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
+import BKE.Network.NetworkClient;
 import BKE.UI.ConsoleUserInterface;
 import BKE.UI.GraphicalUserInterface;
 import BKE.UI.IUserInterface;
@@ -56,9 +60,7 @@ public final class Framework {
     }
 
     public static HashMap<String, Type> GetAvailableGames(){
-
         return _availableGames;
-
     }
 
     public static Thread Start(){
@@ -84,7 +86,11 @@ public final class Framework {
             }
         });
         _gameThread.start();
-
+        try {
+            StartNetwork("127.0.0.1", 7789);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         CreateGraphicalUI();
         CreateConsoleUI();
 
@@ -113,6 +119,7 @@ public final class Framework {
 
         _currentGame.initialize();
         _currentGame.start();
+
 
         for (IUserInterface uInf : userInterfaces){
             new Thread(uInf::Start).start();
@@ -170,5 +177,40 @@ public final class Framework {
         for (IUserInterface userInterface : userInterfaces) {
            userInterface.SendMessageToUser(message);
         }
+    }
+
+    public static void StartNetwork(String host, int port) throws IOException {
+
+        if (_networkedClient != null && _networkedClient.status() == 1){
+            _networkedClient.disconnect();
+        }
+
+
+        _networkedClient = new NetworkClient();
+        _networkedClient.connect(host, port);
+
+        // find games
+
+        String[] games =  _networkedClient.send(new GetGamesCommand());
+
+        for (String game : games ) {
+            System.out.println(game);
+        }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        _networkedClient.send(new LoginCommand("Kevin"));
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        _networkedClient.disconnect();
     }
 }

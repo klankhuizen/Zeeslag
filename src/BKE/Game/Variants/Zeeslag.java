@@ -14,8 +14,8 @@ public class Zeeslag implements IGame {
 
     private final String _name = "ZEESLAG";
     private ApplicationState _state;
-    private IBoard _playerBoard;
-    private IBoard _opponentBoard;
+    private IBoard _playerOneBoard;
+    private IBoard _playerTwoBoard;
 
     private Offset[] _boatOffsetChecks = {
             new Offset(-1, 0),
@@ -23,7 +23,7 @@ public class Zeeslag implements IGame {
             new Offset(0, -1),
             new Offset(0, 1)
     };
-    private boolean _playerTurn;
+    private boolean _playerOneTurn;
     private int _rowSelection;
     private int _columnSelection;
 
@@ -66,10 +66,10 @@ public class Zeeslag implements IGame {
 
         _thread = new Thread(() -> {
             // Schepen voor speler plaatsen
-            plaatsSchepen(_playerBoard);
+            plaatsSchepen(_playerOneBoard);
 
             // Schepen voor tegenstander plaatsen
-            plaatsSchepen(_opponentBoard);
+            plaatsSchepen(_playerTwoBoard);
 
             // Spelronde
             while (!isGameOver()) {
@@ -82,7 +82,7 @@ public class Zeeslag implements IGame {
                     throw new RuntimeException(e);
                 }
 
-                Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+                Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
 
                 // Controleer of het spel voorbij is
                 if (isGameOver()) {
@@ -91,7 +91,7 @@ public class Zeeslag implements IGame {
 
                 // Beurt van tegenstander
                 zetTegenstander();
-                Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+                Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
             }
 
             // Toon het resultaat
@@ -106,8 +106,8 @@ public class Zeeslag implements IGame {
         System.out.println("Initializing Zeeslag");
 
         // zet bord op
-        _playerBoard = new Board(8, 8);
-        _opponentBoard = new Board(8, 8);
+        _playerOneBoard = new Board(8, 8);
+        _playerTwoBoard = new Board(8, 8);
         _state = ApplicationState.RUNNING;
     }
 
@@ -116,7 +116,7 @@ public class Zeeslag implements IGame {
         // Hier komt the user-input binnen
 
         // ongeldige input negeren
-        if (!_playerTurn || input == null || input.isEmpty()) return;
+        if (!_playerOneTurn || input == null || input.isEmpty()) return;
 
         if (input.length() != 2) return;
 
@@ -136,15 +136,15 @@ public class Zeeslag implements IGame {
 
     @Override
     public IBoard GetPlayerBoard() {
-        return _playerBoard;
+        return _playerOneBoard;
     }
 
     public IBoard GetOpponentBoard(){
-        return _opponentBoard;
+        return _playerTwoBoard;
     }
 
     public void RequestUpdate() {
-        Framework.UpdateUI(_opponentBoard.getBoard(), _playerBoard.getBoard());
+        Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
     }
 
     @Override
@@ -160,7 +160,7 @@ public class Zeeslag implements IGame {
     @Override
     public void close() throws IOException {
         if (_thread != null){
-            _thread.stop();
+            _thread.interrupt();
             _thread = null;
         }
         _state = ApplicationState.HALTED;
@@ -172,7 +172,7 @@ public class Zeeslag implements IGame {
         // De speler kan een vak kiezen om op de schieten
         // Dit doet de speler door het nummer en de letter
         // van de bij behorende row en col aan te geven
-        _playerTurn = true;
+        _playerOneTurn = true;
 
         _columnSelection = -1;
         _rowSelection = 0;
@@ -185,13 +185,13 @@ public class Zeeslag implements IGame {
         }
 
         // Voer het schot uit op het bord van de tegenstander
-        boolean hit = schiet(_opponentBoard, _rowSelection - 1, _columnSelection);
+        boolean hit = schiet(_playerTwoBoard, _rowSelection - 1, _columnSelection);
 
         // Toon de resultaten van het schot aan de speler
         if (hit) {
-            Framework.SendMessageToUser("Gefeliciteerd! Je hebt een schip geraakt op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
+            Framework.SendMessageToUser("Gefeliciteerd! Je hebt een schip geraakt op positie " + _playerTwoBoard.locatie(_rowSelection - 1, _columnSelection));
         } else {
-            Framework.SendMessageToUser("Helaas, je hebt gemist op positie " + _opponentBoard.locatie(_rowSelection - 1, _columnSelection));
+            Framework.SendMessageToUser("Helaas, je hebt gemist op positie " + _playerTwoBoard.locatie(_rowSelection - 1, _columnSelection));
         }
 
         // Reset de selecties voor de volgende beurt
@@ -200,34 +200,34 @@ public class Zeeslag implements IGame {
     }
 
     private void zetTegenstander() {
-        _playerTurn = false;
+        _playerOneTurn = false;
         Random random = new Random();
 
         int row, col;
         do {
             row = random.nextInt(8);
             col = random.nextInt(8);
-        } while (!_playerBoard.isValidPosition(row, col));
+        } while (!_playerOneBoard.isValidPosition(row, col));
 
         // Voer het schot uit op het bord van de speler
-        boolean hit = schiet(_playerBoard, row, col);
+        boolean hit = schiet(_playerOneBoard, row, col);
 
         // Toon de resultaten van het schot aan de speler
         if (hit) {
-            Framework.SendMessageToUser("De tegenstander heeft een schip geraakt op positie " + _playerBoard.locatie(row, col));
+            Framework.SendMessageToUser("De tegenstander heeft een schip geraakt op positie " + _playerOneBoard.locatie(row, col));
         } else {
-            Framework.SendMessageToUser("De tegenstander heeft gemist op positie " + _playerBoard.locatie(row, col));
+            Framework.SendMessageToUser("De tegenstander heeft gemist op positie " + _playerOneBoard.locatie(row, col));
         }
     }
 
     private boolean isGameOver() {
-        return schepenGezonken(_playerBoard) || schepenGezonken(_opponentBoard);
+        return schepenGezonken(_playerOneBoard) || schepenGezonken(_playerTwoBoard);
     }
 
     private void resultaat() {
         Framework.SendMessageToUser("Het spel is voorbij!");
 
-        if (schepenGezonken(_playerBoard)) {
+        if (schepenGezonken(_playerOneBoard)) {
             Framework.SendMessageToUser("De tegenstander heeft gewonnen!");
         } else {
             Framework.SendMessageToUser("Je hebt gewonnen!");
