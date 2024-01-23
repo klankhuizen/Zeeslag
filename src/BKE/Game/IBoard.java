@@ -18,8 +18,6 @@ public interface IBoard {
      */
     String locatie(int x, int y);
 
-    boolean schiet(int x, int y);
-
     /**
      * Get the current board
      * @return board
@@ -54,5 +52,8 @@ public interface IBoard {
      */
     int getValue(int x, int y);
 
-    void Clear();
+    /**
+     * Resetting the board.
+     */
+    void clear();
 }

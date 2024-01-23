@@ -36,7 +36,7 @@ public class Ship {
                 int row = startRow;
                 int col = startCol + i;
                 posities.add(new Positie(row, col));
-                board.plaatsSchip(row, col);
+                // board.plaatsSchip(row, col);
             }
         }
         // Verticaal via de rows
@@ -45,7 +45,7 @@ public class Ship {
                 int row = startRow + i;
                 int col = startCol;
                 posities.add(new Positie(row, col));
-                board.plaatsSchip(row, col);
+                // board.plaatsSchip(row, col);
             }
         }
     }
