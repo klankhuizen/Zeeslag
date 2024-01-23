@@ -7,7 +7,9 @@ import BKE.Network.Command.GetGamesCommand;
 import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
 import BKE.Network.NetworkClient;
+import BKE.Network.NetworkCommand;
 import BKE.UI.ConsoleUserInterface;
+import BKE.UI.GUI.NetworkPanel;
 import BKE.UI.GraphicalUserInterface;
 import BKE.UI.IUserInterface;
 
@@ -36,6 +38,8 @@ public final class Framework {
     private static INetworkClient _networkedClient;
 
     private static boolean _isRunning = false;
+
+    private static NetworkPanel _networkPanel;
 
     private Framework(){
         _availableGames = new HashMap<>();
@@ -188,6 +192,11 @@ public final class Framework {
         if (_networkedClient != null){
             _networkedClient.disconnect();
         }
+
+        if (_networkPanel != null){
+            _networkPanel.close();
+            _networkPanel = null;
+        }
     }
 
     public static void StartNetwork(String host, int port, String userName) throws IOException, InterruptedException {
@@ -204,24 +213,23 @@ public final class Framework {
                     _networkedClient.disconnect();
                 }
 
+                if (_networkPanel != null){
+                    _networkPanel.close();
+                    _networkPanel = null;
+                }
+
                 _networkedClient = new NetworkClient();
                 _networkedClient.connect(host, port);
 
-                // find games
+                while (_networkedClient.status() == 0){
 
-                String[] games =  _networkedClient.send(new GetGamesCommand());
-
-                for (String game : games ) {
-                    System.out.println(game);
                 }
 
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                // Connected
 
                 _networkedClient.send(new LoginCommand(userName));
+
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {
@@ -230,6 +238,14 @@ public final class Framework {
         });
 
         _networkThread.start();
+        _networkPanel = new NetworkPanel();
+    }
 
+    public static String[] sendNetworkMessage(NetworkCommand cmd) throws IOException, InterruptedException {
+        if (_networkedClient != null && _networkedClient.status() == 1){
+            return _networkedClient.send(cmd);
+        }
+
+        throw new IOException("Network not started");
     }
 }

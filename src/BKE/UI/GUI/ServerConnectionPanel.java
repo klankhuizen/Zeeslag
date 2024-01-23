@@ -37,7 +37,7 @@ public class ServerConnectionPanel extends JDialog {
         JButton cancelButton = new JButton("Cancel");
         JButton connectButton = new JButton("Connect");
 
-        cancelButton.addActionListener(e ->{
+        cancelButton.addActionListener(e -> {
             this.setVisible(false);
             this.dispose();
         });
