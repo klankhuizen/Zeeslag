@@ -88,7 +88,7 @@ public final class Framework {
         _gameThread.start();
         try {
             StartNetwork("127.0.0.1", 7789);
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
         CreateGraphicalUI();
@@ -179,7 +179,7 @@ public final class Framework {
         }
     }
 
-    public static void StartNetwork(String host, int port) throws IOException {
+    public static void StartNetwork(String host, int port) throws IOException, InterruptedException {
 
         if (_networkedClient != null && _networkedClient.status() == 1){
             _networkedClient.disconnect();

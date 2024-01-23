@@ -7,6 +7,9 @@ import java.net.Socket;
 import java.util.Arrays;
 
 public class NetworkClient implements INetworkClient {
+    private static final int TIMEOUT = 1000;
+    private long _requestTime = 0;
+
     private Thread _socketThread;
 
     private Socket _socket;
@@ -63,40 +66,53 @@ public class NetworkClient implements INetworkClient {
         _socketThread.interrupt();
     }
 
-    public String[] send(NetworkCommand cmd) throws IOException {
+    public String[] send(NetworkCommand cmd) throws IOException, InterruptedException {
         if (_waitingForResponse){
             throw new RuntimeException( "Sending commands too quick, awaiting server response.");
         }
-
         _responseBuffer = null;
-
         int length = cmd.args.length;
-
         for (int i = 0; i < cmd.args.length; i++) {
             String arg = cmd.args[i];
-
             _out.write(arg);
             if (i < length - 1){
                 _out.write(' ');
             }
 
         }
-
         _isExpectingResponse = cmd.expectsResponse();
-        _waitingForResponse = true;
         _out.write('\n');
+        _waitingForResponse = true;
         _out.flush();
 
+        _requestTime = System.currentTimeMillis();
         while (_waitingForResponse){
             // block
+            Thread.sleep(10);
+            if (System.currentTimeMillis() - _requestTime > TIMEOUT){
+                System.out.println("TIMEOUT WaitingForResponse");
+                break;
+            }
         }
 
         while (_incomingResponse){
             // block
+            Thread.sleep(10);
+            if (System.currentTimeMillis() - _requestTime > TIMEOUT){
+                System.out.println("TIMEOUT IncomingResponse");
+                break;
+            }
         }
 
         while (_isExpectingResponse){
+            Thread.sleep(10);
+            if (System.currentTimeMillis() - _requestTime > TIMEOUT){
+                System.out.println("TIMEOUT IsExpectingResponse");
+                break;
+            }
         }
+
+
         String[] response = new String[]{ "NO RESPONSE"};
         if (_responseBuffer != null){
             response = _responseBuffer.clone();
