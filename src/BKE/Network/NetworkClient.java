@@ -8,29 +8,66 @@ import java.net.SocketException;
 import java.util.Arrays;
 
 public class NetworkClient implements INetworkClient {
+
+    /**
+     * Timeout for commands
+     */
     private static final int TIMEOUT = 1000;
+
+    /**
+     * Time the last command was requested
+     */
     private long _requestTime = 0;
 
+    /**
+     * Socket thread
+     */
     private Thread _socketThread;
 
+    /**
+     * Socket
+     */
     private Socket _socket;
 
+    /**
+     * The reader for data coming back from the socket
+     */
     private BufferedReader _in;
 
+    /**
+     * The writer for the data going to the socket
+     */
     private BufferedWriter _out;
 
+    /**
+     * If waiting for a response
+     */
     private boolean _waitingForResponse = false;
 
+    /**
+     * If waiting for an incoming response
+     */
     private boolean _incomingResponse = false;
 
+    /**
+     * If it is expecting response
+     */
     private boolean _isExpectingResponse = false;
 
+    /**
+     * The buffer that will contain the response when it's ready.
+     */
     private String[] _responseBuffer;
 
     public NetworkClient() {
 
     }
 
+    /**
+     * Connect to a server
+     * @param host the host ipv4
+     * @param port the host port
+     */
     public void connect(String host, int port){
         _socketThread = new Thread(this::run);
         try {
@@ -67,6 +104,13 @@ public class NetworkClient implements INetworkClient {
         _socketThread.interrupt();
     }
 
+    /**
+     * Send a command
+     * @param cmd The command
+     * @return The response, if any
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public String[] send(NetworkCommand cmd) throws IOException, InterruptedException {
         if (_waitingForResponse){
             throw new RuntimeException( "Sending commands too quick, awaiting server response.");
