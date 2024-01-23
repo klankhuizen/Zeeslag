@@ -164,7 +164,11 @@ public class GraphicalUserInterface implements IUserInterface {
         });
 
         menuItemDisconnectFromServer.addActionListener(e -> {
-
+            try {
+                Framework.StopNetwork();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         menu.add(menuItemNG);

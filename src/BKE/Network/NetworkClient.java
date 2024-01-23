@@ -4,6 +4,7 @@ import BKE.Framework;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 
 public class NetworkClient implements INetworkClient {
@@ -130,50 +131,56 @@ public class NetworkClient implements INetworkClient {
 
     private void run() {
         try {
-           String input;
+            String input;
 
-           while( _socket.isConnected() && (input = _in.readLine()) != null){
-               String[] segments = input.split(" ");
-               if (segments.length < 1){
-                   throw new RuntimeException("Received invalid input from server");
-               }
+            while (_socket.isConnected() && (input = _in.readLine()) != null) {
+                String[] segments = input.split(" ");
+                if (segments.length < 1) {
+                    throw new RuntimeException("Received invalid input from server");
+                }
 
-               switch (segments[0]){
-                   case "OK":
-                       System.out.println("OK");
-                       Framework.SendMessageToUser("OK");
-                       _waitingForResponse = false;
-                       if (_isExpectingResponse){
-                           _incomingResponse = true;
-                       }
-                       break;
-                   case "ERR":
-                       StringBuilder sb = new StringBuilder();
-                       for (String segment: segments) {
-                           sb.append(segment).append(" ");
-                       }
-                       Framework.SendMessageToUser(sb.toString().trim());
-                       _responseBuffer = segments.clone();
-                       markReady();
-                       break;
-                   case "SVR":
-                       handleMessageFromServer(segments);
-                       break;
-                   default:
-                       if (_incomingResponse){
-                           _responseBuffer = segments.clone();
-                           markReady();
-                       } else {
-                           StringBuilder sb2 = new StringBuilder();
-                           for (String segment: segments) {
-                               sb2.append(segment).append(" ");
-                           }
-                           Framework.SendMessageToUser(sb2.toString().trim());
-                           System.out.println(sb2.toString().trim());
-                       }
-                       break;
-               }
-           }
+                switch (segments[0]) {
+                    case "OK":
+                        System.out.println("OK");
+                        Framework.SendMessageToUser("OK");
+                        _waitingForResponse = false;
+                        if (_isExpectingResponse) {
+                            _incomingResponse = true;
+                        }
+                        break;
+                    case "ERR":
+                        StringBuilder sb = new StringBuilder();
+                        for (String segment : segments) {
+                            sb.append(segment).append(" ");
+                        }
+                        Framework.SendMessageToUser(sb.toString().trim());
+                        _responseBuffer = segments.clone();
+                        markReady();
+                        break;
+                    case "SVR":
+                        handleMessageFromServer(segments);
+                        break;
+                    default:
+                        if (_incomingResponse) {
+                            _responseBuffer = segments.clone();
+                            markReady();
+                        } else {
+                            StringBuilder sb2 = new StringBuilder();
+                            for (String segment : segments) {
+                                sb2.append(segment).append(" ");
+                            }
+                            Framework.SendMessageToUser(sb2.toString().trim());
+                            System.out.println(sb2.toString().trim());
+                        }
+                        break;
+                }
+            }
+
+        } catch (SocketException se){
+            if (se.getMessage().toLowerCase().contains("socket closed")){
+                // Do nothing, the socket simply closed dummy.
+                System.out.println("Socket closed.");
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);

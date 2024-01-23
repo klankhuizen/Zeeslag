@@ -175,6 +175,21 @@ public final class Framework {
         }
     }
 
+    public static void StopNetwork() throws IOException {
+
+        if (null == _networkThread){
+            return;
+        }
+
+        if (!_networkThread.isAlive()){
+            _networkThread = null;
+        }
+
+        if (_networkedClient != null){
+            _networkedClient.disconnect();
+        }
+    }
+
     public static void StartNetwork(String host, int port, String userName) throws IOException, InterruptedException {
 
         if (_networkThread != null && _networkThread.isAlive()){
@@ -188,7 +203,6 @@ public final class Framework {
                 if (_networkedClient != null && _networkedClient.status() == 1){
                     _networkedClient.disconnect();
                 }
-
 
                 _networkedClient = new NetworkClient();
                 _networkedClient.connect(host, port);
