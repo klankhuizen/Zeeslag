@@ -95,7 +95,7 @@ public class Zeeslag implements IGame {
             }
 
             // Toon het resultaat
-            Resultaat();
+            resultaat();
         });
 
         _thread.start();
@@ -209,8 +209,6 @@ public class Zeeslag implements IGame {
             col = random.nextInt(8);
         } while (!_playerBoard.isValidPosition(row, col));
 
-        char colChar = (char) ('A' + col);
-
         // Voer het schot uit op het bord van de speler
         boolean hit = schiet(_playerBoard, row, col);
 
@@ -222,12 +220,11 @@ public class Zeeslag implements IGame {
         }
     }
 
-    // schepenGezonken is niet klaar en moet nog gemaakt worden.
     private boolean isGameOver() {
         return schepenGezonken(_playerBoard) || schepenGezonken(_opponentBoard);
     }
 
-    private void Resultaat() {
+    private void resultaat() {
         Framework.SendMessageToUser("Het spel is voorbij!");
 
         if (schepenGezonken(_playerBoard)) {
@@ -237,21 +234,13 @@ public class Zeeslag implements IGame {
         }
     }
 
-    private void SwitchSides(){
-        _playerTurn = !_playerTurn;
-        if (_playerTurn){
-            System.out.println("Jouw beurt:");
-            System.out.print("Voer de rij in (1-8): ");
-        }
-    }
-
     public void plaatsSchepen(IBoard board) {
         Random random = new Random();
 
         // Hier worden de schip sizes gedefineerd
         // Dit kan eventueel ook later gelinked worden aan namen
         int[] shipSizes = {2, 2, 3, 4, 5};
-        int totalsquares = Arrays.stream(shipSizes).sum();
+        int totalsquares = Arrays.stream(shipSizes).sum(); // get a sum of all the items in the array.
         int attempts = 0;
         boolean valid = false;
 
@@ -280,6 +269,7 @@ public class Zeeslag implements IGame {
                 placedSquares += grootte;
             }
 
+            // The combination is invalid, start over.
             if (totalsquares != placedSquares){
                 board.clear();
                 System.out.println("Invalid config, attempt " + attempts);
