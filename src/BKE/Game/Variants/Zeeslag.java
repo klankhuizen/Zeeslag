@@ -5,6 +5,7 @@ import BKE.Framework;
 import BKE.Game.Board;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
+import BKE.Game.Player.IPlayer;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -14,6 +15,10 @@ public class Zeeslag implements IGame {
 
     private final String _name = "ZEESLAG";
     private ApplicationState _state;
+
+    private IPlayer _playerOne;
+    private IPlayer _playerTwo;
+
     private IBoard _playerOneBoard;
     private IBoard _playerTwoBoard;
 
@@ -60,7 +65,7 @@ public class Zeeslag implements IGame {
         System.out.println("De ronde van Zeeslag zal zo beginnen");
 
         if (_thread != null){
-            _thread.stop();
+            _thread.interrupt();
             _thread = null;
         }
 
@@ -102,12 +107,16 @@ public class Zeeslag implements IGame {
     }
 
     @Override
-    public void initialize() {
+    public void initialize(IPlayer playerOne, IPlayer playerTwo) {
         System.out.println("Initializing Zeeslag");
 
         // zet bord op
         _playerOneBoard = new Board(8, 8);
         _playerTwoBoard = new Board(8, 8);
+        _playerOne = playerOne;
+        _playerTwo = playerTwo;
+        _playerOne.setBoard(_playerOneBoard);
+        _playerTwo.setBoard(_playerTwoBoard);
         _state = ApplicationState.RUNNING;
     }
 
@@ -158,6 +167,11 @@ public class Zeeslag implements IGame {
     }
 
     @Override
+    public IPlayer getPlayer(String name) {
+        return null;
+    }
+
+    @Override
     public void close() throws IOException {
         if (_thread != null){
             _thread.interrupt();
@@ -165,8 +179,6 @@ public class Zeeslag implements IGame {
         }
         _state = ApplicationState.HALTED;
     }
-
-    public Zeeslag() {}
 
     private void zetSpeler() throws InterruptedException {
         // De speler kan een vak kiezen om op de schieten
@@ -352,9 +364,7 @@ public class Zeeslag implements IGame {
     }
 
     private boolean schepenGezonken(IBoard board) {
-
         int[][] boardData = board.getBoard();
-
         // Loop door het bord en controleer of er nog 'O' (schepen) aanwezig zijn
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {

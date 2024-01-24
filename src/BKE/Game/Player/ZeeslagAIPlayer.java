@@ -3,7 +3,7 @@ package BKE.Game.Player;
 import BKE.Game.IBoard;
 
 public class ZeeslagAIPlayer implements IPlayer{
-    private final String _name = "Computer";
+    private String _name = "Computer";
     @Override
     public void doMove() {
 
@@ -19,6 +19,7 @@ public class ZeeslagAIPlayer implements IPlayer{
 
     }
 
-    public ZeeslagAIPlayer() {
+    public ZeeslagAIPlayer(String userName) {
+        _name = userName;
     }
 }

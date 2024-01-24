@@ -2,6 +2,9 @@ package BKE.UI.GUI;
 
 import BKE.Framework;
 import BKE.Game.IGame;
+import BKE.Game.Player.HumanPlayer;
+import BKE.Game.Player.IPlayer;
+import BKE.Game.Player.ZeeslagAIPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,7 +42,11 @@ public class SelectGamePanel extends JDialog {
             try {
                 Framework.UnloadCurrentGame();
                 try {
-                    Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), false);
+
+                    IPlayer playerOne = new HumanPlayer("Hooman");
+                    IPlayer playerTwo = new ZeeslagAIPlayer("COMPOOTER");
+
+                    Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), playerOne, playerTwo);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }

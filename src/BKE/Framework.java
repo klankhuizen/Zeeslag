@@ -1,6 +1,10 @@
 package BKE;
 
 import BKE.Game.IGame;
+import BKE.Game.Player.HumanPlayer;
+import BKE.Game.Player.IPlayer;
+import BKE.Game.Player.NetworkPlayer;
+import BKE.Game.Player.ZeeslagAIPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Network.Command.GetGamesCommand;
@@ -21,8 +25,6 @@ import java.util.HashMap;
 import java.util.Set;
 
 public final class Framework {
-
-
     private static final Framework _instance = new Framework();
 
     private static IGame _currentGame;
@@ -45,7 +47,6 @@ public final class Framework {
         _availableGames = new HashMap<>();
         _availableGames.put("Tic Tac Toe", TicTacToe.class);
         _availableGames.put("Zeeslag", Zeeslag.class);
-
     }
 
     public static IGame GetCurrentGame(){
@@ -93,39 +94,33 @@ public final class Framework {
         _gameThread.start();
         CreateGraphicalUI();
         CreateConsoleUI();
-
         return _gameThread;
     }
 
-    public static void LoadGame(Type game, boolean networked) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static void LoadGame(Type game, IPlayer playerOne, IPlayer playerTwo) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // load the game
 
         if (_currentGame != null){
             _currentGame.close();
         }
-
         // find supported games
-
         Set<String> keys = _availableGames.keySet();
 
         for (String k : keys){
             Type t = _availableGames.get(k);
-
             if (t == game){
                 _currentGame = (IGame) Class.forName(t.getTypeName()).getDeclaredConstructor().newInstance();
             }
         }
 
-        _currentGame.initialize();
+        if (_currentGame == null) throw new RuntimeException("Could not load game");
+
+        _currentGame.initialize(playerOne, playerTwo);
         _currentGame.start();
-
-
         for (IUserInterface uInf : userInterfaces){
             new Thread(uInf::Start).start();
         }
-
-
     }
 
     private static void CreateConsoleUI(){
@@ -217,22 +212,16 @@ public final class Framework {
                     _networkPanel.close();
                     _networkPanel = null;
                 }
-
                 _networkedClient = new NetworkClient();
                 _networkedClient.connect(host, port);
-
                 while (_networkedClient.status() == 0){
-
                 }
 
                 // Connected
-
                 _networkedClient.send(new LoginCommand(userName));
 
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
+                _networkedClient.setUserName(userName);
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -248,4 +237,5 @@ public final class Framework {
 
         throw new IOException("Network not started");
     }
+
 }

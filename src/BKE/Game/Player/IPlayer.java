@@ -9,4 +9,5 @@ public interface IPlayer {
     String getName();
 
     void setBoard(IBoard board);
+
 }

@@ -3,6 +3,7 @@ package BKE.Game.Variants;
 import BKE.ApplicationState;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
+import BKE.Game.Player.IPlayer;
 
 import java.io.IOException;
 
@@ -13,8 +14,8 @@ public class TicTacToe implements IGame {
     }
 
     @Override
-    public void initialize() {
-        System.out.println("<Insert TicTacToe here>");
+    public void initialize(IPlayer playerone, IPlayer playertwo) {
+
     }
 
     @Override
@@ -55,6 +56,11 @@ public class TicTacToe implements IGame {
     @Override
     public String GetGameName() {
         return "TIC TAC TOE";
+    }
+
+    @Override
+    public IPlayer getPlayer(String name) {
+        return null;
     }
 
     @Override

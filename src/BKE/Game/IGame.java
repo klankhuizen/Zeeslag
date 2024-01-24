@@ -1,6 +1,7 @@
 package BKE.Game;
 
 import BKE.ApplicationState;
+import BKE.Game.Player.IPlayer;
 
 import java.io.Closeable;
 
@@ -14,7 +15,7 @@ public interface IGame extends Closeable {
     /**
      * This will set up the game
      */
-    public void initialize();
+    public void initialize(IPlayer playerone, IPlayer playertwo);
 
     /**
      * This will handle any input coming from the user interface
@@ -39,6 +40,7 @@ public interface IGame extends Closeable {
      * @return Board
      */
     public IBoard GetPlayerBoard();
+
     public IBoard GetOpponentBoard();
 
 
@@ -52,4 +54,6 @@ public interface IGame extends Closeable {
     boolean getIsNetworked();
 
     String GetGameName();
+
+    IPlayer getPlayer(String name);
 }

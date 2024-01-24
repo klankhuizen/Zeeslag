@@ -52,15 +52,18 @@ public class GraphicalUserInterface implements IUserInterface {
 
     private void InitializeBoards(){
 
-       if (Framework.GetCurrentGame() == null) return;
+        if (Framework.GetCurrentGame() == null) return;
         IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
         IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
+
         _playerOne = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
-            Framework.GetCurrentGame().HandleInput(y+1 + "" + ((char)(x + 'A')) );
+            Framework.GetCurrentGame().HandleInput( y+1 + "" + ((char)(x + 'A')) );
         });
+
         _playerTwo = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
             System.out.println("PLAYERTWO " + x + "," + y);
         });
+
         JLabel txtPlayerOne = new JLabel("OPPONENT BOARD");
         JLabel txtPlayerTwo = new JLabel("PLAYER BOARD");
 

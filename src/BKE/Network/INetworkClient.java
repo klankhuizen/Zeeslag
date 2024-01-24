@@ -10,4 +10,6 @@ public interface INetworkClient {
     int status();
 
     void disconnect() throws IOException;
+
+    void setUserName(String userName);
 }

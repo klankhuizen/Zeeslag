@@ -1,11 +1,18 @@
 package BKE.Network;
 
 import BKE.Framework;
+import BKE.Game.Player.IPlayer;
+import BKE.Game.Player.NetworkPlayer;
+import BKE.Game.Player.ZeeslagAIPlayer;
+import BKE.Game.Variants.Zeeslag;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class NetworkClient implements INetworkClient {
 
@@ -54,13 +61,17 @@ public class NetworkClient implements INetworkClient {
      */
     private boolean _isExpectingResponse = false;
 
+    private String _userName = "";
+
+    private HashMap<String, Type> _supportedGames = new HashMap<>();
+
     /**
      * The buffer that will contain the response when it's ready.
      */
     private String[] _responseBuffer;
 
     public NetworkClient() {
-
+        _supportedGames.put("battleship", Zeeslag.class);
     }
 
     /**
@@ -102,6 +113,11 @@ public class NetworkClient implements INetworkClient {
         _socket = null;
 
         _socketThread.interrupt();
+    }
+
+    @Override
+    public void setUserName(String userName) {
+        _userName = userName;
     }
 
     /**
@@ -184,6 +200,7 @@ public class NetworkClient implements INetworkClient {
                 }
 
                 switch (segments[0]) {
+
                     case "OK":
                         System.out.println("OK");
                         Framework.SendMessageToUser("OK");
@@ -279,15 +296,37 @@ public class NetworkClient implements INetworkClient {
     private void handleMessageFromGame(String[] args){
         switch (args[2]){
             case "MATCH":
+                if (_supportedGames.containsKey(args[3])){
+                    // Start a new game
+                    try {
+
+                        String playerStarting = "";
+                        String game = "";
+                        String opponent = "";
+
+                        IPlayer playerOne;
+                        IPlayer playerTwo;
+                        if (playerStarting.equals(_userName)){
+                            playerOne = new ZeeslagAIPlayer(_userName);
+                            playerTwo = new NetworkPlayer(opponent);
+                        } else {
+                            playerOne = new NetworkPlayer(opponent);
+                            playerTwo = new ZeeslagAIPlayer(_userName);
+                        }
+                        Framework.LoadGame(_supportedGames.get(game), playerOne, playerTwo);
+                    } catch (IOException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
+                             InstantiationException | IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 System.out.println("We got a match");
                 break;
             case "YOURTURN":
                 System.out.println("OUR TURN");
                 break;
             case "MOVE":
-
                 System.out.println("A move was made");
-
                 break;
             case "CHALLENGE":
 

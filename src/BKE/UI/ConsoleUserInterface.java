@@ -157,20 +157,20 @@ public class ConsoleUserInterface implements IUserInterface {
                 char choice = message.charAt(0);
                 switch (choice){
 
-                    case '1':
-                        Framework.LoadGame(Zeeslag.class, false);
-                        break;
-                    case '2':
-                        Framework.LoadGame(Zeeslag.class, true);
-                        break;
-
-                    case '3':
-                        Framework.LoadGame(TicTacToe.class, false);
-                        break;
-                    case '4':
-                        Framework.LoadGame(TicTacToe.class, true);
-                        break;
-
+//                    case '1':
+//                        Framework.LoadGame(Zeeslag.class, false);
+//                        break;
+//                    case '2':
+//                        Framework.LoadGame(Zeeslag.class, true);
+//                        break;
+//
+//                    case '3':
+//                        Framework.LoadGame(TicTacToe.class, false);
+//                        break;
+//                    case '4':
+//                        Framework.LoadGame(TicTacToe.class, true);
+//                        break;
+//
                     case 'Q':
                     case 'q':
                         scannerState = ApplicationState.HALTED;

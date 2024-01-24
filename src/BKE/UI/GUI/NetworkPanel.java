@@ -5,7 +5,6 @@ import BKE.Network.Command.GetGamesCommand;
 import BKE.Network.Command.SubscribeCommand;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
@@ -49,9 +48,7 @@ public class NetworkPanel implements Closeable {
             try {
                 games = Framework.sendNetworkMessage(new GetGamesCommand());
                 UpdateGamesList(games);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         });
