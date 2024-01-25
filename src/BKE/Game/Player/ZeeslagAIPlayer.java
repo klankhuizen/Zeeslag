@@ -143,9 +143,10 @@ public class ZeeslagAIPlayer implements IPlayer{
     }
 
     @Override
-    public Vector2D getNextMove() {
-        return null;
+    public boolean isRemote() {
+        return false;
     }
+
 
     public ZeeslagAIPlayer(String userName) {
         _name = userName;

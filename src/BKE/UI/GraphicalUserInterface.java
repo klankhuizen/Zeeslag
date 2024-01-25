@@ -3,6 +3,7 @@ package BKE.UI;
 import BKE.Framework;
 import BKE.Game.IBoard;
 import BKE.Game.Player.IPlayer;
+import BKE.Network.Message.GameResultMessage;
 import BKE.UI.GUI.BattleShipPanel;
 import BKE.UI.GUI.SelectGamePanel;
 import BKE.UI.GUI.ServerConnectionPanel;
@@ -37,54 +38,57 @@ public class GraphicalUserInterface implements IUserInterface {
 
     @Override
     public void Start() {
-        if (_frame == null){
+        SwingUtilities.invokeLater(() -> {
+            if (_frame == null){
 
-            _frame = new JFrame("");
+                _frame = new JFrame("");
 
-        }
-        UpdateTitle();
-        _frame.getContentPane().removeAll();
-        _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        _frame.setSize(400, 800);
+            }
+            UpdateTitle();
+            _frame.getContentPane().removeAll();
+            _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            _frame.setSize(400, 800);
 
-        BoxLayout layoutOne = new BoxLayout(_frame.getContentPane(), BoxLayout.Y_AXIS);
-        _frame.setLayout(layoutOne);
-        InitializeBoards();
-        CreateMenuBar();
-        _frame.setVisible(true);
+            BoxLayout layoutOne = new BoxLayout(_frame.getContentPane(), BoxLayout.Y_AXIS);
+            _frame.setLayout(layoutOne);
+            InitializeBoards();
+            CreateMenuBar();
+            _frame.setVisible(true);
+        });
     }
 
     private void InitializeBoards(){
+        SwingUtilities.invokeLater(() -> {
+            if (Framework.GetCurrentGame() == null) return;
+            IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
+            IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
 
-        if (Framework.GetCurrentGame() == null) return;
-        IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
-        IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
+            _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
+                Framework.GetCurrentGame().HandleInput( x+1 + "" + ((char)(y + 'A')) );
+            });
 
-        _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
-            Framework.GetCurrentGame().HandleInput( x+1 + "" + ((char)(y + 'A')) );
+            _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
+                System.out.println("PLAYERTWO " + x + "," + y);
+            });
+
+            _playerOneName = new JLabel("OPPONENT BOARD");
+            _playerTwoName = new JLabel("PLAYER BOARD");
+
+            _textArea = new JTextArea(1,16);
+            JScrollPane _textScrollPane  = new JScrollPane(_textArea);
+
+            _textArea.setLineWrap(true);
+            _textArea.setWrapStyleWord(true);
+            _textArea.setEditable(false);
+
+            _frame.getContentPane().add(_playerOneName);
+            _frame.getContentPane().add(_playerOnePane);
+            _frame.getContentPane().add(_playerTwoName);
+            _frame.getContentPane().add(_playerTwoPane);
+            _frame.getContentPane().add(_textScrollPane);
+
+            Framework.GetCurrentGame().RequestUpdate();
         });
-
-        _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
-            System.out.println("PLAYERTWO " + x + "," + y);
-        });
-
-        _playerOneName = new JLabel("OPPONENT BOARD");
-        _playerTwoName = new JLabel("PLAYER BOARD");
-
-        _textArea = new JTextArea(1,16);
-        JScrollPane _textScrollPane  = new JScrollPane(_textArea);
-
-        _textArea.setLineWrap(true);
-        _textArea.setWrapStyleWord(true);
-        _textArea.setEditable(false);
-
-        _frame.getContentPane().add(_playerOneName);
-        _frame.getContentPane().add(_playerOnePane);
-        _frame.getContentPane().add(_playerTwoName);
-        _frame.getContentPane().add(_playerTwoPane);
-        _frame.getContentPane().add(_textScrollPane);
-
-        Framework.GetCurrentGame().RequestUpdate();
     }
 
     /**
@@ -109,6 +113,9 @@ public class GraphicalUserInterface implements IUserInterface {
      */
     public void UpdateFields(IPlayer playerOne, IPlayer playerTwo){
         SwingUtilities.invokeLater(() -> {
+            _playerOnePane.showShips(!playerOne.isRemote());
+            _playerTwoPane.showShips(!playerTwo.isRemote());
+
             _playerOnePane.UpdateField(playerOne.getBoard().getValues());
             _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
 
@@ -124,6 +131,14 @@ public class GraphicalUserInterface implements IUserInterface {
                 _textArea.append(message + "\n");
             }
         });
+    }
+
+    @Override
+    public void setWinner(GameResultMessage gsm) {
+        String[] appendices = {"LOSER", "DRAW", "WINNER"};
+
+        _playerOneName.setText(_playerOneName.getText() + " - " + appendices[gsm.getPlayerOneScore() + 1]);
+        _playerTwoName.setText(_playerTwoName.getText() + " - " + appendices[gsm.getPlayerTwoScore() + 1]);
     }
 
     public void CreateMenuBar(){

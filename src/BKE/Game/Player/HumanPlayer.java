@@ -36,7 +36,7 @@ public class HumanPlayer implements IPlayer {
     }
 
     @Override
-    public Vector2D getNextMove() {
-        return new Vector2D(0, 1);
+    public boolean isRemote() {
+        return false;
     }
 }

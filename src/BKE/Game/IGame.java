@@ -2,6 +2,7 @@ package BKE.Game;
 
 import BKE.ApplicationState;
 import BKE.Game.Player.IPlayer;
+import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
 import java.io.Closeable;
@@ -65,4 +66,6 @@ public interface IGame extends Closeable {
     void doTurn(String playerName);
 
     void move(MoveMessage msg);
+
+    void setGameResult(GameResultMessage gsm);
 }

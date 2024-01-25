@@ -1,10 +1,12 @@
 package BKE.Network;
 
 import BKE.Framework;
+import BKE.Game.Player.IPlayer;
 import BKE.Game.Player.NetworkPlayer;
 import BKE.Game.Player.ZeeslagAIPlayer;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.ServerDataDecoder;
+import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
 import java.io.*;
@@ -341,9 +343,12 @@ public class NetworkClient implements INetworkClient {
                 break;
             case "WIN":
             case "LOSS":
-            case "DRAW":
-                System.out.println("GAME RESULT: "  + args[2]);
+            case "DRAW":{
+                Map<String, String> mapped = ServerDataDecoder.DecodeMap(args);
+                GameResultMessage gsm = new GameResultMessage(Integer.parseInt(mapped.get("PLAYERONESCORE")), Integer.parseInt(mapped.get("PLAYERTWOSCORE")), mapped.get("COMMENT"));
+                Framework.GetCurrentGame().setGameResult(gsm);
                 break;
+            }
 
             default:
                 System.out.println("invalid mssage from game");
@@ -375,7 +380,18 @@ public class NetworkClient implements INetworkClient {
                 String opponent = data.get("OPPONENT");
 
                 _game = new NetworkedGame(new ZeeslagAIPlayer(_userName), new NetworkPlayer(opponent), gameName);
-                Framework.LoadGame(game, _game._localPlayer, _game._remotePlayer, playerStarting, true);
+
+                IPlayer playerOne, playerTwo;
+
+                if (playerStarting.equals(_game._localPlayer.getName())){
+                    playerOne = _game._localPlayer;
+                    playerTwo = _game._remotePlayer;
+                } else {
+                    playerOne = _game._remotePlayer;
+                    playerTwo = _game._localPlayer;
+                }
+
+                Framework.LoadGame(game, playerOne, playerTwo, playerStarting, true);
 //                String nm = _game._localPlayer.getName();
 //                if (nm.equals(playerStarting)){
 //                    _game._localPlayer.doMove();

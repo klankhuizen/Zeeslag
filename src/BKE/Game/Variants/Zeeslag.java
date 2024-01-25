@@ -7,6 +7,7 @@ import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
 import BKE.Helper.Vector2D;
+import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
@@ -36,22 +37,16 @@ public class Zeeslag implements IGame {
     private Thread _thread;
 
     public enum FieldValues {
-
         // This is some bullshit, Java!
         EMPTY(0), HIT(1), MISS(2), SHIP(3);
-
         private final int value;
         private FieldValues(int val){
             this.value = val;
         }
-
         public int getValue() {
             return value;
         }
-
     }
-
-
 
     private void startLocalThread(){
         if (_thread != null){
@@ -89,15 +84,8 @@ public class Zeeslag implements IGame {
 
     @Override
     public void start(String playerStarting) {
-
-        System.out.println("Starting Zeeslag");
-        System.out.println("De ronde van Zeeslag zal zo beginnen");
         if (!getIsNetworked()){
             startLocalThread();
-        } else{
-            // Networked game
-            // First player is local
-//            plaatsSchepen(_playerOneBoard);
         }
     }
 
@@ -183,6 +171,11 @@ public class Zeeslag implements IGame {
         Vector2D position = affectedBoard.getFromNetworked(msg.getLocation());
         affectedBoard.setValue(position.X, position.Y, msg.getValue().getValue());
         Framework.UpdateUI(_playerOne, _playerTwo);
+    }
+
+    @Override
+    public void setGameResult(GameResultMessage gsm) {
+        Framework.UpdateUI(gsm);
     }
 
     @Override

@@ -6,6 +6,7 @@ import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
+import BKE.Network.Message.GameResultMessage;
 import BKE.Network.NetworkClient;
 import BKE.Network.NetworkCommand;
 import BKE.UI.ConsoleUserInterface;
@@ -154,6 +155,12 @@ public final class Framework {
     public static void UpdateUI(IPlayer playerOne, IPlayer playerTwo){
         for (IUserInterface userInterface : userInterfaces) {
             userInterface.UpdateFields(playerOne, playerTwo);
+        }
+    }
+
+    public static void UpdateUI(GameResultMessage gsm){
+        for (IUserInterface userInterface : userInterfaces) {
+            userInterface.setWinner(gsm);
         }
     }
 

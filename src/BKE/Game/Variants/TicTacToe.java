@@ -4,6 +4,7 @@ import BKE.ApplicationState;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
+import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
@@ -71,6 +72,11 @@ public class TicTacToe implements IGame {
 
     @Override
     public void move(MoveMessage msg) {
+
+    }
+
+    @Override
+    public void setGameResult(GameResultMessage gsm) {
 
     }
 

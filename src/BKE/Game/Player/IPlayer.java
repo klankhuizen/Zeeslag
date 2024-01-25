@@ -12,5 +12,6 @@ public interface IPlayer {
     void setBoard(IBoard board);
     IBoard getBoard();
 
-    Vector2D getNextMove();
+    boolean isRemote();
+
 }

@@ -166,4 +166,8 @@ public class BattleShipPanel extends JPanel implements Closeable {
 
     }
 
+    public void showShips(boolean ships){
+        _showShips = ships;
+    }
+
 }

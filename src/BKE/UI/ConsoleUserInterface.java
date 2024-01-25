@@ -5,6 +5,7 @@ import BKE.Framework;
 import BKE.Game.Player.IPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
+import BKE.Network.Message.GameResultMessage;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,6 +44,11 @@ public class ConsoleUserInterface implements IUserInterface {
     @Override
     public void SendMessageToUser(String message) {
         System.out.println(message);
+    }
+
+    @Override
+    public void setWinner(GameResultMessage gsm) {
+
     }
 
     public void PrintBoard(int[][] board, boolean showShips){

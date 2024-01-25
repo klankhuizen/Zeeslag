@@ -29,8 +29,8 @@ public class NetworkPlayer implements IPlayer{
     }
 
     @Override
-    public Vector2D getNextMove() {
-        return null;
+    public boolean isRemote() {
+        return true;
     }
 
     public NetworkPlayer(String username) {
