@@ -33,7 +33,14 @@ public class GraphicalUserInterface implements IUserInterface {
      */
     JTextArea _textArea;
 
+    /**
+     * The name for player one
+     */
     JLabel _playerOneName = new JLabel("PLAYER 1");
+
+    /**
+     * The name for player two
+     */
     JLabel _playerTwoName = new JLabel("Player 2");
 
     @Override
@@ -57,6 +64,9 @@ public class GraphicalUserInterface implements IUserInterface {
         });
     }
 
+    /**
+     * Initialize the boards for player one and two.
+     */
     private void InitializeBoards(){
         SwingUtilities.invokeLater(() -> {
             if (Framework.GetCurrentGame() == null) return;
@@ -87,7 +97,8 @@ public class GraphicalUserInterface implements IUserInterface {
             _frame.getContentPane().add(_playerTwoPane);
             _frame.getContentPane().add(_textScrollPane);
 
-//            Framework.GetCurrentGame().RequestUpdate();
+            // Request an update from the framework after the panels are ready.
+            Framework.GetCurrentGame().RequestUpdate();
         });
     }
 
@@ -113,9 +124,6 @@ public class GraphicalUserInterface implements IUserInterface {
      */
     public void UpdateFields(IPlayer playerOne, IPlayer playerTwo){
         SwingUtilities.invokeLater(() -> {
-//            _playerOnePane.showShips(!playerOne.isRemote());
-//            _playerTwoPane.showShips(!playerTwo.isRemote());
-
             _playerOnePane.UpdateField(playerOne.getBoard().getValues());
             _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
 
@@ -141,6 +149,9 @@ public class GraphicalUserInterface implements IUserInterface {
         _playerTwoName.setText(_playerTwoName.getText() + " - " + appendices[gsm.getPlayerTwoScore() + 1]);
     }
 
+    /**
+     * Creates a menu bar and menu bar accessories.
+     */
     public void CreateMenuBar(){
         JMenuBar menuBar = new JMenuBar();
 
