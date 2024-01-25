@@ -1,10 +1,16 @@
 package BKE;
 
 import BKE.Game.IGame;
+import BKE.Game.Player.IPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
+import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
+import BKE.Network.Message.GameResultMessage;
+import BKE.Network.NetworkClient;
+import BKE.Network.NetworkCommand;
 import BKE.UI.ConsoleUserInterface;
+import BKE.UI.GUI.NetworkPanel;
 import BKE.UI.GraphicalUserInterface;
 import BKE.UI.IUserInterface;
 
@@ -16,8 +22,6 @@ import java.util.HashMap;
 import java.util.Set;
 
 public final class Framework {
-
-
     private static final Framework _instance = new Framework();
 
     private static IGame _currentGame;
@@ -28,15 +32,18 @@ public final class Framework {
 
     private static Thread _gameThread;
 
+    private static Thread _networkThread;
+
     private static INetworkClient _networkedClient;
 
     private static boolean _isRunning = false;
+
+    private static NetworkPanel _networkPanel;
 
     private Framework(){
         _availableGames = new HashMap<>();
         _availableGames.put("Tic Tac Toe", TicTacToe.class);
         _availableGames.put("Zeeslag", Zeeslag.class);
-
     }
 
     public static IGame GetCurrentGame(){
@@ -56,9 +63,7 @@ public final class Framework {
     }
 
     public static HashMap<String, Type> GetAvailableGames(){
-
         return _availableGames;
-
     }
 
     public static Thread Start(){
@@ -84,41 +89,42 @@ public final class Framework {
             }
         });
         _gameThread.start();
-
         CreateGraphicalUI();
-        CreateConsoleUI();
 
+        try {
+            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+//        CreateConsoleUI();
         return _gameThread;
     }
 
-    public static void LoadGame(Type game, boolean networked) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static void LoadGame(Type game, IPlayer playerOne, IPlayer playerTwo, String playerStarting, boolean networked) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // load the game
 
         if (_currentGame != null){
             _currentGame.close();
         }
-
         // find supported games
-
         Set<String> keys = _availableGames.keySet();
 
         for (String k : keys){
             Type t = _availableGames.get(k);
-
             if (t == game){
                 _currentGame = (IGame) Class.forName(t.getTypeName()).getDeclaredConstructor().newInstance();
             }
         }
 
-        _currentGame.initialize();
-        _currentGame.start();
+        if (_currentGame == null) throw new RuntimeException("Could not load game");
 
+        _currentGame.initialize(playerOne, playerTwo, networked);
+        _currentGame.start(playerStarting);
         for (IUserInterface uInf : userInterfaces){
             new Thread(uInf::Start).start();
         }
-
-
     }
 
     private static void CreateConsoleUI(){
@@ -146,9 +152,15 @@ public final class Framework {
         iFace.Start();
     }
 
-    public static void UpdateUI(int[][] playerOne, int[][] playerTwo){
+    public static void UpdateUI(IPlayer playerOne, IPlayer playerTwo){
         for (IUserInterface userInterface : userInterfaces) {
             userInterface.UpdateFields(playerOne, playerTwo);
+        }
+    }
+
+    public static void UpdateUI(GameResultMessage gsm){
+        for (IUserInterface userInterface : userInterfaces) {
+            userInterface.setWinner(gsm);
         }
     }
 
@@ -158,7 +170,6 @@ public final class Framework {
         if (_currentGame != null){
             try {
                 _currentGame.close();
-
             } catch (IOException e) {
                 System.out.println("Error while shutting down.");
             }
@@ -171,4 +182,69 @@ public final class Framework {
            userInterface.SendMessageToUser(message);
         }
     }
+
+    public static void StopNetwork() throws IOException {
+
+        if (null == _networkThread){
+            return;
+        }
+
+        if (!_networkThread.isAlive()){
+            _networkThread = null;
+        }
+
+        if (_networkedClient != null){
+            _networkedClient.disconnect();
+        }
+
+        if (_networkPanel != null){
+            _networkPanel.close();
+            _networkPanel = null;
+        }
+    }
+
+    public static void StartNetwork(String host, int port, String userName) throws IOException, InterruptedException {
+
+        if (_networkThread != null && _networkThread.isAlive()){
+            _networkThread.interrupt();
+            _networkThread = null;
+        }
+
+        _networkThread = new Thread(() -> {
+
+            try {
+                if (_networkedClient != null && _networkedClient.status() == 1){
+                    _networkedClient.disconnect();
+                }
+
+                if (_networkPanel != null){
+                    _networkPanel.close();
+                    _networkPanel = null;
+                }
+                _networkedClient = new NetworkClient();
+                _networkedClient.connect(host, port);
+                while (_networkedClient.status() == 0){
+                }
+
+                // Connected
+                _networkedClient.send(new LoginCommand(userName));
+
+                _networkedClient.setUserName(userName);
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        _networkThread.start();
+//        _networkPanel = new NetworkPanel();
+    }
+
+    public static String[] sendNetworkMessage(NetworkCommand cmd) throws IOException, InterruptedException {
+        if (_networkedClient != null && _networkedClient.status() == 1){
+            return _networkedClient.send(cmd);
+        }
+
+        throw new IOException("Network not started");
+    }
+
 }

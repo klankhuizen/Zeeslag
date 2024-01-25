@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
@@ -51,11 +52,7 @@ public class BattleShipPanel extends JPanel implements Closeable {
     /**
      * Map of the different colors used per field value
      */
-    private final Map<Integer, Color> _colorMap = Map.of(
-            0, new Color(255, 255, 255), // WHITE
-            1, new Color(255, 25, 25), // RED
-            2, new Color(100, 150, 255) // BLUE
-    );
+    private final HashMap<Integer, Color> _colorMap = new HashMap<>();
 
     /**
      * Create a new battleship panel
@@ -65,6 +62,11 @@ public class BattleShipPanel extends JPanel implements Closeable {
      */
     public BattleShipPanel(int numVertical, int numHorizontal, boolean showShips, BiConsumer<Integer, Integer> callback) {
         super();
+
+        _colorMap.put(0, new Color(255, 255, 255)); // WHITE
+        _colorMap.put(1, new Color(255, 25, 25)); // RED
+        _colorMap.put(2, new Color(100, 150, 255)); // BLUE
+
         if (numHorizontal < 1 || numVertical < 1){
             throw new IllegalArgumentException("Min size of grid is 1x1");
         }
@@ -73,6 +75,10 @@ public class BattleShipPanel extends JPanel implements Closeable {
         _matrix = new int[numHorizontal][numVertical];
         _callback = callback;
         _showShips = showShips;
+
+        if (!_showShips){
+            _colorMap.put(0, new Color(146, 146, 146));
+        }
 
         mouseInputAdapter = new MouseInputAdapter() {
             @Override
@@ -131,7 +137,7 @@ public class BattleShipPanel extends JPanel implements Closeable {
             for (int v = 0; v < _numVertical; v++){
                 int y = 2;
                 for (int h = 0; h < _numHorizontal; h++){
-                    int value = _matrix[h][v]; // Grab field value
+                    int value = _matrix[v][h]; // Grab field value
                     graphics.setColor(new Color(0, 0, 0)); // Borders are always black
                     graphics.drawRect(x, y, _squareSize, _squareSize);
 
@@ -164,6 +170,10 @@ public class BattleShipPanel extends JPanel implements Closeable {
             mouseInputAdapter = null;
         }
 
+    }
+
+    public void showShips(boolean ships){
+        _showShips = ships;
     }
 
 }

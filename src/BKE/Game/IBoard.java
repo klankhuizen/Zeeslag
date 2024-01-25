@@ -1,5 +1,7 @@
 package BKE.Game;
 
+import BKE.Helper.Vector2D;
+
 public interface IBoard {
 
     /**
@@ -22,7 +24,7 @@ public interface IBoard {
      * Get the current board
      * @return board
      */
-    int[][] getBoard();
+    int[][] getValues();
 
     /**
      * Get the width of the board
@@ -56,4 +58,6 @@ public interface IBoard {
      * Resetting the board.
      */
     void clear();
+
+    Vector2D getFromNetworked(int loc);
 }
