@@ -182,6 +182,7 @@ public class Zeeslag implements IGame {
         IBoard affectedBoard = _playerOne.getName().equals(msg.getPlayerName()) ? _playerTwoBoard : _playerOneBoard;
         Vector2D position = affectedBoard.getFromNetworked(msg.getLocation());
         affectedBoard.setValue(position.X, position.Y, msg.getValue().getValue());
+        Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
     }
 
     @Override

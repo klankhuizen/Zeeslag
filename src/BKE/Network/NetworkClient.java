@@ -204,6 +204,7 @@ public class NetworkClient implements INetworkClient {
                 if (msg != null){
                     handleMessageFromServer(msg);
                 }
+                Thread.sleep(100);
             }
         } catch (Exception e){
             throw new RuntimeException(e);
@@ -331,13 +332,11 @@ public class NetworkClient implements INetworkClient {
             case "MOVE":{
                 Map<String, String> mapped = ServerDataDecoder.DecodeMap(args);
                 MoveMessage msg = new MoveMessage(Integer.parseInt(mapped.get("MOVE")), mapped.get("PLAYER"), mapped.get("RESULT"));
-
                 Framework.GetCurrentGame().move(msg);
                 break;
             }
 
             case "CHALLENGE":
-
                 System.out.println("Received a challenge");
                 break;
             case "WIN":
@@ -377,7 +376,7 @@ public class NetworkClient implements INetworkClient {
 
                 _game = new NetworkedGame(new ZeeslagAIPlayer(_userName), new NetworkPlayer(opponent), gameName);
                 Framework.LoadGame(game, _game._localPlayer, _game._remotePlayer, playerStarting, true);
-                String nm = _game._localPlayer.getName();
+//                String nm = _game._localPlayer.getName();
 //                if (nm.equals(playerStarting)){
 //                    _game._localPlayer.doMove();
 //                }

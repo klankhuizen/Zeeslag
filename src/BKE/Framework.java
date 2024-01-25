@@ -167,7 +167,6 @@ public final class Framework {
         if (_currentGame != null){
             try {
                 _currentGame.close();
-
             } catch (IOException e) {
                 System.out.println("Error while shutting down.");
             }

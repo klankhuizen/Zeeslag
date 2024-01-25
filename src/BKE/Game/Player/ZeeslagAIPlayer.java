@@ -97,15 +97,23 @@ public class ZeeslagAIPlayer implements IPlayer{
                     int begin = ship.getNetworkBegin();
                     int end = ship.getNetworkEnd();
                     String[] response = Framework.sendNetworkMessage(new PlaceCommand(_board, begin, end));
-                    System.out.println("ass");
                 } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    Thread.sleep(100); // spam prot
+                } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
             _isPlacingShips = false;
             return;
         }
-
+        try {
+            Thread.sleep(100); // spam prot
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         try {
             String[] response = Framework.sendNetworkMessage(new DoMoveCommand(getNewShotLocation()));
