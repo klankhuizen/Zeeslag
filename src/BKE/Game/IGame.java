@@ -68,4 +68,8 @@ public interface IGame extends Closeable {
     void move(MoveMessage msg);
 
     void setGameResult(GameResultMessage gsm);
+
+    IPlayer getPlayerOne();
+
+    IPlayer getPlayerTwo();
 }

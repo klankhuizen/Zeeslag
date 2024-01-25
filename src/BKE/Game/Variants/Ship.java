@@ -51,4 +51,12 @@ public class Ship {
 
         return _begin.Y * _boardWidth + _begin.X + _boardWidth * (_length - 1);
     }
+
+    public boolean isHorizontal(){
+        return _horizontal;
+    }
+
+    public int getLength(){
+        return _length;
+    }
 }

@@ -9,10 +9,7 @@ import BKE.Network.Command.DoMoveCommand;
 import BKE.Network.Command.PlaceCommand;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
 
 public class ZeeslagAIPlayer implements IPlayer{
     private String _name;
@@ -70,6 +67,23 @@ public class ZeeslagAIPlayer implements IPlayer{
 
             valid = true;
         } while (!valid);
+
+        _board.clear();
+        for (Ship ship : _ships) {
+
+            Vector2D begin = ship.getBegin();
+            Vector2D end = ship.getEnd();
+
+            if (ship.isHorizontal()){
+                for (int i = 0; i < ship.getLength(); i++){
+                    _board.setValue(begin.X + i, begin.Y, Zeeslag.FieldValues.SHIP.getValue());
+                }
+            } else{
+                for (int i = 0; i < ship.getLength(); i++){
+                    _board.setValue(begin.X, begin.Y + i, Zeeslag.FieldValues.SHIP.getValue());
+                }
+            }
+        }
 
     }
 

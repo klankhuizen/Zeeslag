@@ -81,6 +81,16 @@ public class TicTacToe implements IGame {
     }
 
     @Override
+    public IPlayer getPlayerOne() {
+        return null;
+    }
+
+    @Override
+    public IPlayer getPlayerTwo() {
+        return null;
+    }
+
+    @Override
     public void close() throws IOException {
 
     }

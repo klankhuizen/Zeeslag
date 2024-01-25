@@ -63,11 +63,11 @@ public class GraphicalUserInterface implements IUserInterface {
             IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
             IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
 
-            _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
+            _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), !Framework.GetCurrentGame().getPlayerOne().isRemote(), (x, y) -> {
                 Framework.GetCurrentGame().HandleInput( x+1 + "" + ((char)(y + 'A')) );
             });
 
-            _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
+            _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), !Framework.GetCurrentGame().getPlayerTwo().isRemote(), (x, y) -> {
                 System.out.println("PLAYERTWO " + x + "," + y);
             });
 
@@ -87,7 +87,7 @@ public class GraphicalUserInterface implements IUserInterface {
             _frame.getContentPane().add(_playerTwoPane);
             _frame.getContentPane().add(_textScrollPane);
 
-            Framework.GetCurrentGame().RequestUpdate();
+//            Framework.GetCurrentGame().RequestUpdate();
         });
     }
 
@@ -113,8 +113,8 @@ public class GraphicalUserInterface implements IUserInterface {
      */
     public void UpdateFields(IPlayer playerOne, IPlayer playerTwo){
         SwingUtilities.invokeLater(() -> {
-            _playerOnePane.showShips(!playerOne.isRemote());
-            _playerTwoPane.showShips(!playerTwo.isRemote());
+//            _playerOnePane.showShips(!playerOne.isRemote());
+//            _playerTwoPane.showShips(!playerTwo.isRemote());
 
             _playerOnePane.UpdateField(playerOne.getBoard().getValues());
             _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());

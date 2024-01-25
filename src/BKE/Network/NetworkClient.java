@@ -9,6 +9,7 @@ import BKE.Helper.ServerDataDecoder;
 import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
+import javax.xml.stream.FactoryConfigurationError;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.Socket;
@@ -228,7 +229,6 @@ public class NetworkClient implements INetworkClient {
                 switch (segments[0]) {
 
                     case "OK":
-                        Framework.SendMessageToUser("OK");
                         _waitingForResponse = false;
                         if (_isExpectingResponse) {
                             _incomingResponse = true;
@@ -325,10 +325,8 @@ public class NetworkClient implements INetworkClient {
         switch (args[2]){
             case "MATCH":
                 startNetworkedGame(args);
-                System.out.println("We got a match");
                 break;
             case "YOURTURN":
-                System.out.println("OUR TURN");
                 Framework.GetCurrentGame().doTurn(_userName);
                 break;
             case "MOVE":{
@@ -347,6 +345,20 @@ public class NetworkClient implements INetworkClient {
                 Map<String, String> mapped = ServerDataDecoder.DecodeMap(args);
                 GameResultMessage gsm = new GameResultMessage(Integer.parseInt(mapped.get("PLAYERONESCORE")), Integer.parseInt(mapped.get("PLAYERTWOSCORE")), mapped.get("COMMENT"));
                 Framework.GetCurrentGame().setGameResult(gsm);
+
+                IPlayer playerOne = Framework.GetCurrentGame().getPlayerOne();
+                IPlayer playerTwo = Framework.GetCurrentGame().getPlayerTwo();
+
+                String message;
+                if (gsm.getPlayerOneScore() == 1){
+                    message = playerOne.getName() + " WON!";
+                } else if (gsm.getPlayerTwoScore() == 1){
+                    message = playerTwo.getName() + " WON!";
+                } else {
+                    message = "MATCH WAS A DRAW";
+                }
+
+                Framework.SendMessageToUser(message);
                 break;
             }
 

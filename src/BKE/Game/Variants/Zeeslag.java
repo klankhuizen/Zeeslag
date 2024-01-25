@@ -179,6 +179,16 @@ public class Zeeslag implements IGame {
     }
 
     @Override
+    public IPlayer getPlayerOne() {
+        return _playerOne;
+    }
+
+    @Override
+    public IPlayer getPlayerTwo() {
+        return _playerTwo;
+    }
+
+    @Override
     public void close() throws IOException {
         if (_thread != null){
             _thread.interrupt();
