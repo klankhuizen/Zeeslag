@@ -1,5 +1,7 @@
 package BKE.Game;
 
+import BKE.Helper.Vector2D;
+
 public class Board implements IBoard {
     /**
      * The board matrix
@@ -73,6 +75,14 @@ public class Board implements IBoard {
     @Override
     public void clear() {
         board = new int[_width][_height];
+    }
+
+    @Override
+    public Vector2D getFromNetworked(int loc) {
+        int x = loc % _width;
+        int y = Math.floorDiv(loc, _width);
+
+        return new Vector2D(x, y);
     }
 }
 

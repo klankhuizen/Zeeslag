@@ -1,18 +1,21 @@
 package BKE.Network;
 
 import BKE.Framework;
-import BKE.Game.Player.IPlayer;
 import BKE.Game.Player.NetworkPlayer;
 import BKE.Game.Player.ZeeslagAIPlayer;
 import BKE.Game.Variants.Zeeslag;
+import BKE.Helper.ServerDataDecoder;
+import BKE.Network.Message.MoveMessage;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class NetworkClient implements INetworkClient {
 
@@ -30,6 +33,8 @@ public class NetworkClient implements INetworkClient {
      * Socket thread
      */
     private Thread _socketThread;
+
+    private Thread _handleThread;
 
     /**
      * Socket
@@ -55,7 +60,6 @@ public class NetworkClient implements INetworkClient {
      * If waiting for an incoming response
      */
     private boolean _incomingResponse = false;
-
     /**
      * If it is expecting response
      */
@@ -63,12 +67,16 @@ public class NetworkClient implements INetworkClient {
 
     private String _userName = "";
 
+    LinkedBlockingQueue<String[]> _queue = new LinkedBlockingQueue<>();
+
     private HashMap<String, Type> _supportedGames = new HashMap<>();
 
     /**
      * The buffer that will contain the response when it's ready.
      */
     private String[] _responseBuffer;
+
+    private NetworkedGame _game;
 
     public NetworkClient() {
         _supportedGames.put("battleship", Zeeslag.class);
@@ -81,6 +89,7 @@ public class NetworkClient implements INetworkClient {
      */
     public void connect(String host, int port){
         _socketThread = new Thread(this::run);
+        _handleThread = new Thread(this::runQueue);
         try {
             _socket = new Socket(host, port);
             _out = new BufferedWriter(new OutputStreamWriter(_socket.getOutputStream()));
@@ -88,6 +97,7 @@ public class NetworkClient implements INetworkClient {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        _handleThread.start();
         _socketThread.start();
     }
 
@@ -113,6 +123,7 @@ public class NetworkClient implements INetworkClient {
         _socket = null;
 
         _socketThread.interrupt();
+        _handleThread.interrupt();
     }
 
     @Override
@@ -128,9 +139,6 @@ public class NetworkClient implements INetworkClient {
      * @throws InterruptedException
      */
     public String[] send(NetworkCommand cmd) throws IOException, InterruptedException {
-        if (_waitingForResponse){
-            throw new RuntimeException( "Sending commands too quick, awaiting server response.");
-        }
         _responseBuffer = null;
         int length = cmd.args.length;
         for (int i = 0; i < cmd.args.length; i++) {
@@ -139,12 +147,13 @@ public class NetworkClient implements INetworkClient {
             if (i < length - 1){
                 _out.write(' ');
             }
-
         }
+
         _isExpectingResponse = cmd.expectsResponse();
         _out.write('\n');
         _waitingForResponse = true;
         _out.flush();
+        System.out.println("C -> S :: " + String.join(" ", cmd.args));
 
         _requestTime = System.currentTimeMillis();
         while (_waitingForResponse){
@@ -164,7 +173,7 @@ public class NetworkClient implements INetworkClient {
                 break;
             }
         }
-
+//
         while (_isExpectingResponse){
             Thread.sleep(10);
             if (System.currentTimeMillis() - _requestTime > TIMEOUT){
@@ -178,7 +187,7 @@ public class NetworkClient implements INetworkClient {
         if (_responseBuffer != null){
             response = _responseBuffer.clone();
         }
-
+        _isExpectingResponse = false;
         return response;
     }
 
@@ -188,12 +197,26 @@ public class NetworkClient implements INetworkClient {
         _incomingResponse = false;
     }
 
+    private void runQueue(){
+        try{
+            while (true){
+                String[] msg = _queue.poll();
+                if (msg != null){
+                    handleMessageFromServer(msg);
+                }
+            }
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private void run() {
         try {
             String input;
 
             while (_socket.isConnected() && (input = _in.readLine()) != null) {
+                System.out.println("C <- S :: " + input);
                 String[] segments = input.split(" ");
                 if (segments.length < 1) {
                     throw new RuntimeException("Received invalid input from server");
@@ -202,7 +225,6 @@ public class NetworkClient implements INetworkClient {
                 switch (segments[0]) {
 
                     case "OK":
-                        System.out.println("OK");
                         Framework.SendMessageToUser("OK");
                         _waitingForResponse = false;
                         if (_isExpectingResponse) {
@@ -219,7 +241,7 @@ public class NetworkClient implements INetworkClient {
                         markReady();
                         break;
                     case "SVR":
-                        handleMessageFromServer(segments);
+                        _queue.offer(segments);
                         break;
                     default:
                         if (_incomingResponse) {
@@ -278,6 +300,8 @@ public class NetworkClient implements INetworkClient {
     }
 
     private void handleReceiveGameList(String[] args) {
+
+        ServerDataDecoder.DecodeArray(args);
         String[] buffer = new String[args.length - 2];
         for (int i = 2; i < args.length; i++){
             buffer[i - 2] = args[i].replace("\"", "").replace("[", "").replace("]", "").replace(",", "");
@@ -294,40 +318,24 @@ public class NetworkClient implements INetworkClient {
     }
 
     private void handleMessageFromGame(String[] args){
+
         switch (args[2]){
             case "MATCH":
-                if (_supportedGames.containsKey(args[3])){
-                    // Start a new game
-                    try {
-
-                        String playerStarting = "";
-                        String game = "";
-                        String opponent = "";
-
-                        IPlayer playerOne;
-                        IPlayer playerTwo;
-                        if (playerStarting.equals(_userName)){
-                            playerOne = new ZeeslagAIPlayer(_userName);
-                            playerTwo = new NetworkPlayer(opponent);
-                        } else {
-                            playerOne = new NetworkPlayer(opponent);
-                            playerTwo = new ZeeslagAIPlayer(_userName);
-                        }
-                        Framework.LoadGame(_supportedGames.get(game), playerOne, playerTwo);
-                    } catch (IOException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                             InstantiationException | IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
+                startNetworkedGame(args);
                 System.out.println("We got a match");
                 break;
             case "YOURTURN":
                 System.out.println("OUR TURN");
+                Framework.GetCurrentGame().doTurn(_userName);
                 break;
-            case "MOVE":
-                System.out.println("A move was made");
+            case "MOVE":{
+                Map<String, String> mapped = ServerDataDecoder.DecodeMap(args);
+                MoveMessage msg = new MoveMessage(Integer.parseInt(mapped.get("MOVE")), mapped.get("PLAYER"), mapped.get("RESULT"));
+
+                Framework.GetCurrentGame().move(msg);
                 break;
+            }
+
             case "CHALLENGE":
 
                 System.out.println("Received a challenge");
@@ -341,6 +349,41 @@ public class NetworkClient implements INetworkClient {
             default:
                 System.out.println("invalid mssage from game");
                 break;
+        }
+    }
+
+    private void startNetworkedGame(String[] args) {
+
+        if (_game != null){
+            try {
+                _game.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            _game = null;
+        }
+
+
+        Map<String, String> data = ServerDataDecoder.DecodeMap(args);
+        String gameName = data.get("GAMETYPE");
+
+        Type game = _supportedGames.get(gameName.toLowerCase());
+
+        if (game != null) {
+            // Start a new game
+            try {
+                String playerStarting = data.get("PLAYERTOMOVE");
+                String opponent = data.get("OPPONENT");
+
+                _game = new NetworkedGame(new ZeeslagAIPlayer(_userName), new NetworkPlayer(opponent), gameName);
+                Framework.LoadGame(game, _game._localPlayer, _game._remotePlayer, playerStarting, true);
+                String nm = _game._localPlayer.getName();
+//                if (nm.equals(playerStarting)){
+//                    _game._localPlayer.doMove();
+//                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

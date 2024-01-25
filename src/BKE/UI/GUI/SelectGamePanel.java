@@ -46,7 +46,7 @@ public class SelectGamePanel extends JDialog {
                     IPlayer playerOne = new HumanPlayer("Hooman");
                     IPlayer playerTwo = new ZeeslagAIPlayer("COMPOOTER");
 
-                    Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), playerOne, playerTwo);
+                    Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), playerOne, playerTwo, playerOne.getName(), false);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }

@@ -4,17 +4,18 @@ import BKE.ApplicationState;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
+import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
 
 public class TicTacToe implements IGame {
     @Override
-    public void start() {
+    public void start(String pl) {
 
     }
 
     @Override
-    public void initialize(IPlayer playerone, IPlayer playertwo) {
+    public void initialize(IPlayer playerone, IPlayer playertwo, boolean networked) {
 
     }
 
@@ -61,6 +62,16 @@ public class TicTacToe implements IGame {
     @Override
     public IPlayer getPlayer(String name) {
         return null;
+    }
+
+    @Override
+    public void doTurn(String playerName) {
+
+    }
+
+    @Override
+    public void move(MoveMessage msg) {
+
     }
 
     @Override

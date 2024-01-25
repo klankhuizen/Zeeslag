@@ -1,5 +1,8 @@
 package BKE.Game;
 
+import BKE.Game.Player.IPlayer;
+import BKE.Helper.Vector2D;
+
 public interface IBoard {
 
     /**
@@ -56,4 +59,6 @@ public interface IBoard {
      * Resetting the board.
      */
     void clear();
+
+    Vector2D getFromNetworked(int loc);
 }

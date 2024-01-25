@@ -1,6 +1,7 @@
 package BKE.Game.Player;
 
 import BKE.Game.IBoard;
+import BKE.Helper.Vector2D;
 
 public interface IPlayer {
 
@@ -9,5 +10,7 @@ public interface IPlayer {
     String getName();
 
     void setBoard(IBoard board);
+    IBoard getBoard();
 
+    Vector2D getNextMove();
 }

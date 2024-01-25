@@ -5,8 +5,8 @@ import BKE.Network.NetworkCommand;
 
 public class DoMoveCommand extends NetworkCommand {
 
-    public DoMoveCommand(IBoard board, int x, int y) {
-        this.args = new String[]{"move", "" + (board.getHeight() * y + x)};
+    public DoMoveCommand(int pos) {
+        this.args = new String[]{"move", "" + pos};
     }
 
     @Override

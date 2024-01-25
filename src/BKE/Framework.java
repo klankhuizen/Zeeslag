@@ -93,11 +93,18 @@ public final class Framework {
         });
         _gameThread.start();
         CreateGraphicalUI();
-        CreateConsoleUI();
+
+        try {
+            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+//        CreateConsoleUI();
         return _gameThread;
     }
 
-    public static void LoadGame(Type game, IPlayer playerOne, IPlayer playerTwo) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static void LoadGame(Type game, IPlayer playerOne, IPlayer playerTwo, String playerStarting, boolean networked) throws IllegalArgumentException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
         // load the game
 
@@ -116,8 +123,8 @@ public final class Framework {
 
         if (_currentGame == null) throw new RuntimeException("Could not load game");
 
-        _currentGame.initialize(playerOne, playerTwo);
-        _currentGame.start();
+        _currentGame.initialize(playerOne, playerTwo, networked);
+        _currentGame.start(playerStarting);
         for (IUserInterface uInf : userInterfaces){
             new Thread(uInf::Start).start();
         }
@@ -227,7 +234,7 @@ public final class Framework {
         });
 
         _networkThread.start();
-        _networkPanel = new NetworkPanel();
+//        _networkPanel = new NetworkPanel();
     }
 
     public static String[] sendNetworkMessage(NetworkCommand cmd) throws IOException, InterruptedException {
