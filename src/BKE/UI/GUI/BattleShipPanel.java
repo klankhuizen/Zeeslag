@@ -131,7 +131,7 @@ public class BattleShipPanel extends JPanel implements Closeable {
             for (int v = 0; v < _numVertical; v++){
                 int y = 2;
                 for (int h = 0; h < _numHorizontal; h++){
-                    int value = _matrix[h][v]; // Grab field value
+                    int value = _matrix[v][h]; // Grab field value
                     graphics.setColor(new Color(0, 0, 0)); // Borders are always black
                     graphics.drawRect(x, y, _squareSize, _squareSize);
 

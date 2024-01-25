@@ -2,6 +2,7 @@ package BKE.UI;
 
 import BKE.ApplicationState;
 import BKE.Framework;
+import BKE.Game.Player.IPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
 
@@ -34,11 +35,9 @@ public class ConsoleUserInterface implements IUserInterface {
     }
 
     @Override
-    public void UpdateFields(int[][] playerOne, int[][] playerTwo) {
-
-        PrintBoard(playerOne, false);
-        PrintBoard(playerTwo, true);
-
+    public void UpdateFields(IPlayer playerOne, IPlayer playerTwo) {
+        PrintBoard(playerOne.getBoard().getValues(), true);
+        PrintBoard(playerTwo.getBoard().getValues(), false);
     }
 
     @Override

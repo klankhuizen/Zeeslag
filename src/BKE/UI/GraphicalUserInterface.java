@@ -2,6 +2,7 @@ package BKE.UI;
 
 import BKE.Framework;
 import BKE.Game.IBoard;
+import BKE.Game.Player.IPlayer;
 import BKE.UI.GUI.BattleShipPanel;
 import BKE.UI.GUI.SelectGamePanel;
 import BKE.UI.GUI.ServerConnectionPanel;
@@ -19,17 +20,20 @@ public class GraphicalUserInterface implements IUserInterface {
     /**
      * Player one pane
      */
-    BattleShipPanel _playerOne;
+    BattleShipPanel _playerOnePane;
 
     /**
      * Player two pane
      */
-    BattleShipPanel _playerTwo;
+    BattleShipPanel _playerTwoPane;
 
     /**
      * The text area to display status messages from the game.
      */
     JTextArea _textArea;
+
+    JLabel _playerOneName = new JLabel("PLAYER 1");
+    JLabel _playerTwoName = new JLabel("Player 2");
 
     @Override
     public void Start() {
@@ -56,16 +60,16 @@ public class GraphicalUserInterface implements IUserInterface {
         IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
         IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
 
-        _playerOne = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
-            Framework.GetCurrentGame().HandleInput( y+1 + "" + ((char)(x + 'A')) );
+        _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
+            Framework.GetCurrentGame().HandleInput( x+1 + "" + ((char)(y + 'A')) );
         });
 
-        _playerTwo = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), true, (x, y) -> {
+        _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), false, (x, y) -> {
             System.out.println("PLAYERTWO " + x + "," + y);
         });
 
-        JLabel txtPlayerOne = new JLabel("OPPONENT BOARD");
-        JLabel txtPlayerTwo = new JLabel("PLAYER BOARD");
+        _playerOneName = new JLabel("OPPONENT BOARD");
+        _playerTwoName = new JLabel("PLAYER BOARD");
 
         _textArea = new JTextArea(1,16);
         JScrollPane _textScrollPane  = new JScrollPane(_textArea);
@@ -74,10 +78,10 @@ public class GraphicalUserInterface implements IUserInterface {
         _textArea.setWrapStyleWord(true);
         _textArea.setEditable(false);
 
-        _frame.getContentPane().add(txtPlayerOne);
-        _frame.getContentPane().add(_playerOne);
-        _frame.getContentPane().add(txtPlayerTwo);
-        _frame.getContentPane().add(_playerTwo);
+        _frame.getContentPane().add(_playerOneName);
+        _frame.getContentPane().add(_playerOnePane);
+        _frame.getContentPane().add(_playerTwoName);
+        _frame.getContentPane().add(_playerTwoPane);
         _frame.getContentPane().add(_textScrollPane);
 
         Framework.GetCurrentGame().RequestUpdate();
@@ -100,13 +104,16 @@ public class GraphicalUserInterface implements IUserInterface {
 
     /**
      * Update the fields on the game
-     * @param playerOneField Player one field matrix
-     * @param playerTwoField Player two field matrix
+     * @param playerOne Player one field matrix
+     * @param playerTwo Player two field matrix
      */
-    public void UpdateFields(int[][] playerOneField, int[][] playerTwoField){
+    public void UpdateFields(IPlayer playerOne, IPlayer playerTwo){
         SwingUtilities.invokeLater(() -> {
-            _playerOne.UpdateField(playerOneField);
-            _playerTwo.UpdateField(playerTwoField);
+            _playerOnePane.UpdateField(playerOne.getBoard().getValues());
+            _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
+
+            _playerOneName.setText(playerOne.getName());
+            _playerTwoName.setText(playerTwo.getName());
         });
     }
 
@@ -189,11 +196,11 @@ public class GraphicalUserInterface implements IUserInterface {
 
     @Override
     public void close() throws IOException {
-        _playerOne.close();
-        _playerTwo.close();
+        _playerOnePane.close();
+        _playerTwoPane.close();
         _frame.getContentPane().removeAll();
-        _playerOne = null;
-        _playerTwo = null;
+        _playerOnePane = null;
+        _playerTwoPane = null;
         _frame.repaint();
     }
 }

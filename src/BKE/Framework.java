@@ -1,13 +1,9 @@
 package BKE;
 
 import BKE.Game.IGame;
-import BKE.Game.Player.HumanPlayer;
 import BKE.Game.Player.IPlayer;
-import BKE.Game.Player.NetworkPlayer;
-import BKE.Game.Player.ZeeslagAIPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
-import BKE.Network.Command.GetGamesCommand;
 import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
 import BKE.Network.NetworkClient;
@@ -155,7 +151,7 @@ public final class Framework {
         iFace.Start();
     }
 
-    public static void UpdateUI(int[][] playerOne, int[][] playerTwo){
+    public static void UpdateUI(IPlayer playerOne, IPlayer playerTwo){
         for (IUserInterface userInterface : userInterfaces) {
             userInterface.UpdateFields(playerOne, playerTwo);
         }

@@ -73,7 +73,7 @@ public class Zeeslag implements IGame {
                 IPlayer nextPlayer = _nextTurn.equals(_playerOne.getName()) ? _playerOne : _playerTwo;
 
                 nextPlayer.doMove();
-                Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
+                Framework.UpdateUI(_playerOne, _playerTwo);
 
                 // Controleer of het spel voorbij is
                 if (isGameOver()) {
@@ -150,7 +150,7 @@ public class Zeeslag implements IGame {
     }
 
     public void RequestUpdate() {
-        Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
+        Framework.UpdateUI(_playerOne, _playerTwo);
     }
 
     @Override
@@ -182,7 +182,7 @@ public class Zeeslag implements IGame {
         IBoard affectedBoard = _playerOne.getName().equals(msg.getPlayerName()) ? _playerTwoBoard : _playerOneBoard;
         Vector2D position = affectedBoard.getFromNetworked(msg.getLocation());
         affectedBoard.setValue(position.X, position.Y, msg.getValue().getValue());
-        Framework.UpdateUI(_playerTwoBoard.getBoard(), _playerOneBoard.getBoard());
+        Framework.UpdateUI(_playerOne, _playerTwo);
     }
 
     @Override
@@ -378,7 +378,7 @@ public class Zeeslag implements IGame {
     }
 
     private boolean schepenGezonken(IBoard board) {
-        int[][] boardData = board.getBoard();
+        int[][] boardData = board.getValues();
         // Loop door het bord en controleer of er nog 'O' (schepen) aanwezig zijn
         for (int i = 0; i < board.getWidth(); i++) {
             for (int j = 0; j < board.getHeight(); j++) {

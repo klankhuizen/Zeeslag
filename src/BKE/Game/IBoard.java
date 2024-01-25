@@ -1,6 +1,5 @@
 package BKE.Game;
 
-import BKE.Game.Player.IPlayer;
 import BKE.Helper.Vector2D;
 
 public interface IBoard {
@@ -25,7 +24,7 @@ public interface IBoard {
      * Get the current board
      * @return board
      */
-    int[][] getBoard();
+    int[][] getValues();
 
     /**
      * Get the width of the board
