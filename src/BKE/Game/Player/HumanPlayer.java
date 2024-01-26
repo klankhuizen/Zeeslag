@@ -1,6 +1,7 @@
 package BKE.Game.Player;
 
 import BKE.Game.IBoard;
+import BKE.Game.IGame;
 import BKE.Helper.Vector2D;
 
 public class HumanPlayer implements IPlayer {
@@ -38,5 +39,10 @@ public class HumanPlayer implements IPlayer {
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public void setGame(IGame game) {
+
     }
 }

@@ -2,6 +2,7 @@ package BKE.Game;
 
 import BKE.ApplicationState;
 import BKE.Game.Player.IPlayer;
+import BKE.Helper.MatchStats;
 import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
@@ -72,4 +73,6 @@ public interface IGame extends Closeable {
     IPlayer getPlayerOne();
 
     IPlayer getPlayerTwo();
+
+    MatchStats getMatchStats();
 }

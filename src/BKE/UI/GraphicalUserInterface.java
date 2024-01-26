@@ -150,6 +150,7 @@ public class GraphicalUserInterface implements IUserInterface {
 
         JMenuItem menuItemNG = new JMenuItem("New Game");
         JMenuItem menuItemCloseGame = new JMenuItem("Stop Game");
+        JMenuItem menuItemRunTests = new JMenuItem("Run Benchmarks...");
         JMenuItem menuItemClose = new JMenuItem("Close");
 
         JMenuItem menuItemConnectToServer = new JMenuItem("Connect...");
@@ -183,6 +184,15 @@ public class GraphicalUserInterface implements IUserInterface {
 
         });
 
+        menuItemRunTests.addActionListener(e -> {
+            // run benchmarks
+            if (Framework.isRunningBenchmarks()){
+                Framework.stopRunningBenchmarks();
+            } else{
+                Framework.startRunningBenchmarks();
+            }
+        });
+
         menuItemConnectToServer.addActionListener(e -> {
             ServerConnectionPanel svp = new ServerConnectionPanel();
             svp.setVisible(true);
@@ -197,6 +207,7 @@ public class GraphicalUserInterface implements IUserInterface {
         });
 
         menu.add(menuItemNG);
+        menu.add(menuItemRunTests);
         menu.add(menuItemCloseGame);
         menu.add(menuItemClose);
 

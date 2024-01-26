@@ -4,6 +4,7 @@ import BKE.ApplicationState;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
+import BKE.Helper.MatchStats;
 import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
 
@@ -87,6 +88,11 @@ public class TicTacToe implements IGame {
 
     @Override
     public IPlayer getPlayerTwo() {
+        return null;
+    }
+
+    @Override
+    public MatchStats getMatchStats() {
         return null;
     }
 

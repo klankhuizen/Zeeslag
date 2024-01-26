@@ -4,6 +4,7 @@ import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
+import BKE.Helper.Benchmarker;
 import BKE.Network.Command.LoginCommand;
 import BKE.Network.INetworkClient;
 import BKE.Network.Message.GameResultMessage;
@@ -24,6 +25,8 @@ import java.util.Set;
 public final class Framework {
     private static final Framework _instance = new Framework();
 
+    private static boolean _isRunningBenchMarks = false;
+
     private static IGame _currentGame;
 
     private static HashMap<String, Type> _availableGames;
@@ -40,10 +43,34 @@ public final class Framework {
 
     private static NetworkPanel _networkPanel;
 
+    private static Benchmarker _benchmarker;
+
+    private static boolean _isnetworked;
+
     private Framework(){
         _availableGames = new HashMap<>();
         _availableGames.put("Tic Tac Toe", TicTacToe.class);
         _availableGames.put("Zeeslag", Zeeslag.class);
+    }
+
+    public static void startRunningBenchmarks(){
+        _isRunningBenchMarks = true;
+        _benchmarker = new Benchmarker();
+        _benchmarker.initialize();
+        _benchmarker.start();
+    }
+
+    public static void stopRunningBenchmarks(){
+        _benchmarker.stop();
+        _isRunningBenchMarks = false;
+    }
+
+    public static boolean isRunningBenchmarks() {
+        return _isRunningBenchMarks;
+    }
+
+    public static boolean isNetworked(){
+        return _isnetworked;
     }
 
     public static IGame GetCurrentGame(){
@@ -91,11 +118,11 @@ public final class Framework {
         _gameThread.start();
         CreateGraphicalUI();
 
-        try {
-            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
+//        } catch (IOException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
 
 //        CreateConsoleUI();
         return _gameThread;
@@ -122,6 +149,9 @@ public final class Framework {
 
         _currentGame.initialize(playerOne, playerTwo, networked);
         _currentGame.start(playerStarting);
+
+        if (isRunningBenchmarks()) return;
+
         for (IUserInterface uInf : userInterfaces){
             new Thread(uInf::Start).start();
         }
@@ -201,10 +231,12 @@ public final class Framework {
             _networkPanel.close();
             _networkPanel = null;
         }
+
+        _isnetworked = false;
     }
 
     public static void StartNetwork(String host, int port, String userName) throws IOException, InterruptedException {
-
+        _isnetworked = true;
         if (_networkThread != null && _networkThread.isAlive()){
             _networkThread.interrupt();
             _networkThread = null;
@@ -237,6 +269,10 @@ public final class Framework {
 
         _networkThread.start();
 //        _networkPanel = new NetworkPanel();
+    }
+
+    public boolean isNetworkRunning(){
+        return _networkThread != null && _networkThread.isAlive();
     }
 
     public static String[] sendNetworkMessage(NetworkCommand cmd) throws IOException, InterruptedException {

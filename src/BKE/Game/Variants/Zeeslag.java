@@ -6,6 +6,7 @@ import BKE.Game.Board;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
+import BKE.Helper.MatchStats;
 import BKE.Helper.Vector2D;
 import BKE.Network.Message.GameResultMessage;
 import BKE.Network.Message.MoveMessage;
@@ -22,6 +23,8 @@ public class Zeeslag implements IGame {
     private String _nextTurn;
     private IBoard _playerOneBoard;
     private IBoard _playerTwoBoard;
+    private MatchStats _stats;
+    private IPlayer _winner;
 
     private boolean _networked;
     private static Vector2D[] _boatOffsetChecks = {
@@ -68,7 +71,14 @@ public class Zeeslag implements IGame {
                 IPlayer nextPlayer = _nextTurn.equals(_playerOne.getName()) ? _playerOne : _playerTwo;
 
                 nextPlayer.doMove();
-                Framework.UpdateUI(_playerOne, _playerTwo);
+
+                _stats.turns++;
+
+                _nextTurn = nextPlayer == _playerOne ? _playerTwo.getName() : _playerOne.getName();
+
+                if (!Framework.isRunningBenchmarks()){
+                    Framework.UpdateUI(_playerOne, _playerTwo);
+                }
 
                 // Controleer of het spel voorbij is
                 if (isGameOver()) {
@@ -76,6 +86,8 @@ public class Zeeslag implements IGame {
                 }
             }
 
+//            System.out.println("Winner is " + _winner.getName());
+            _state = ApplicationState.HALTED;
             // Toon het resultaat
             resultaat();
         });
@@ -91,7 +103,7 @@ public class Zeeslag implements IGame {
 
     @Override
     public void initialize(IPlayer playerOne, IPlayer playerTwo, boolean isNetworked) {
-        System.out.println("Initializing Zeeslag");
+//        System.out.println("Initializing Zeeslag");
 
         _networked = isNetworked;
 
@@ -103,6 +115,11 @@ public class Zeeslag implements IGame {
         _playerOne.setBoard(_playerOneBoard);
         _playerTwo.setBoard(_playerTwoBoard);
         _state = ApplicationState.RUNNING;
+
+        _stats = new MatchStats();
+
+        _stats.playerOne = playerOne.getName();
+        _stats.playerTwo = playerTwo.getName();
     }
 
     @Override
@@ -189,6 +206,11 @@ public class Zeeslag implements IGame {
     }
 
     @Override
+    public MatchStats getMatchStats() {
+        return _stats;
+    }
+
+    @Override
     public void close() throws IOException {
         if (_thread != null){
             _thread.interrupt();
@@ -250,7 +272,14 @@ public class Zeeslag implements IGame {
     }
 
     private boolean isGameOver() {
-        return schepenGezonken(_playerOneBoard) || schepenGezonken(_playerTwoBoard);
+        if (schepenGezonken(_playerOneBoard)){
+            _winner = _playerTwo;
+            _stats.winner = _playerTwo.getName();
+        } else if (schepenGezonken(_playerTwoBoard)){
+            _winner = _playerOne;
+            _stats.winner = _playerOne.getName();
+        }
+        return _winner != null;
     }
 
     private void resultaat() {
@@ -301,7 +330,7 @@ public class Zeeslag implements IGame {
             // The combination is invalid, start over.
             if (totalsquares != placedSquares){
                 board.clear();
-                System.out.println("Invalid config, attempt " + attempts);
+//                System.out.println("Invalid config, attempt " + attempts);
                 continue;
             }
 
@@ -416,24 +445,24 @@ public class Zeeslag implements IGame {
     public boolean schiet(IBoard board, int row, int col) {
         // Controleer of de zet binnen het bord valt
         if (!board.isValidPosition(row, col)) {
-            System.out.println("Ongeldige positie. Probeer opnieuw.");
+//            System.out.println("Ongeldige positie. Probeer opnieuw.");
             return false;
         }
 
         // Controleer of er een schip op de opgegeven positie is
         if (board.getValue(row, col) == Zeeslag.FieldValues.SHIP.getValue()) {
             board.setValue(row, col,Zeeslag.FieldValues.HIT.getValue()); // Markeer het getroffen schip
-            System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + board.locatie(row, col));
+//            System.out.println("Gefeliciteerd! Je hebt een schip geraakt op positie " + board.locatie(row, col));
             // Controleert of het schip is gezonken
             if (isSchipGezonken(board, row, col)) {
-                System.out.println("Helaas, je schip is gezonken op positie " + board.locatie(row, col));
+//                System.out.println("Helaas, je schip is gezonken op positie " + board.locatie(row, col));
             }
             return true;
         } else if (board.getValue(row, col) == Zeeslag.FieldValues.EMPTY.getValue()) {
             board.setValue(row, col, Zeeslag.FieldValues.MISS.getValue()); // Markeer de gemiste schoten
-            System.out.println("Helaas, je hebt gemist op positie " + board.locatie(row, col));
+//            System.out.println("Helaas, je hebt gemist op positie " + board.locatie(row, col));
         } else {
-            System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
+//            System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
         }
         return false;
     }

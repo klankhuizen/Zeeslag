@@ -2,6 +2,7 @@ package BKE.Game.Player;
 
 import BKE.Framework;
 import BKE.Game.IBoard;
+import BKE.Game.IGame;
 import BKE.Game.Variants.Ship;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.Vector2D;
@@ -19,6 +20,7 @@ public class ZeeslagAIPlayer implements IPlayer{
     private static final int[] SHIPSIZES = { 2, 3, 4, 6 };
 
     private HashSet<Integer> _shotLocations = new HashSet<>();
+    private Zeeslag _game;
 
     private void generateShipPlacements(){
 
@@ -60,7 +62,7 @@ public class ZeeslagAIPlayer implements IPlayer{
             if (totalsquares != placedSquares){
                 _ships.clear();
                 _board.clear();
-                System.out.println("Invalid config, attempt " + attempts);
+//                System.out.println("Invalid config, attempt " + attempts);
                 continue;
             }
 
@@ -103,36 +105,77 @@ public class ZeeslagAIPlayer implements IPlayer{
     IBoard _board;
     @Override
     public void doMove() {
+        long time = System.currentTimeMillis();
         if (_isPlacingShips){
             while (!_ships.isEmpty()) {
                 Ship ship = _ships.get(0);
                 _ships.remove(0);
-                try {
-                    int begin = ship.getNetworkBegin();
-                    int end = ship.getNetworkEnd();
-                    String[] response = Framework.sendNetworkMessage(new PlaceCommand(_board, begin, end));
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
-                    Thread.sleep(100); // spam prot
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                int begin = ship.getNetworkBegin();
+
+                if (Framework.isNetworked()){
+                    try {
+                        int end = ship.getNetworkEnd();
+
+                        String[] response = Framework.sendNetworkMessage(new PlaceCommand(_board, begin, end));
+                    } catch (IOException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        Thread.sleep(100); // spam prot
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             _isPlacingShips = false;
             return;
         }
-        try {
-            Thread.sleep(100); // spam prot
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+
+        boolean isPlayerOne = _game.getPlayerOne() == this;
+
+        if (Framework.isNetworked()){
+            try {
+                Thread.sleep(100); // spam prot
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                String[] response = Framework.sendNetworkMessage(new DoMoveCommand(getNewShotLocation()));
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            int loc = getNewShotLocation();
+            int x = loc % _board.getWidth();
+            int y = Math.floorDiv(loc, _board.getWidth());
+            boolean hit = _game.schiet(isPlayerOne ? _game.getPlayerTwo().getBoard() : _game.getPlayerOne().getBoard(), x, y);
+            if (Framework.isRunningBenchmarks()){
+                if (hit){
+                    if (isPlayerOne){
+                        _game.getMatchStats().playerOneHits ++;
+
+                    } else {
+                        _game.getMatchStats().playerTwoHits ++;
+                    }
+                } else {
+                    if (isPlayerOne){
+                        _game.getMatchStats().playerOneMisses ++;
+
+                    } else {
+                        _game.getMatchStats().playerTwoMisses ++;
+                    }
+                }
+
+            }
         }
 
-        try {
-            String[] response = Framework.sendNetworkMessage(new DoMoveCommand(getNewShotLocation()));
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+        if (Framework.isRunningBenchmarks()){
+            if (isPlayerOne){
+                _game.getMatchStats().playerOneTotalTurnTime += System.currentTimeMillis() - time;
+            } else {
+                _game.getMatchStats().playerTwoTotalTurnTime += System.currentTimeMillis() - time;
+            }
         }
     }
 
@@ -162,10 +205,20 @@ public class ZeeslagAIPlayer implements IPlayer{
     }
 
 
+    public ZeeslagAIPlayer(String userName, Zeeslag game) {
+        _name = userName;
+        _isPlacingShips = true;
+        _random = new Random();
+        setGame(game);
+    }
+
     public ZeeslagAIPlayer(String userName) {
         _name = userName;
         _isPlacingShips = true;
         _random = new Random();
+    }
 
+    public void setGame(IGame game){
+        _game = (Zeeslag) game;
     }
 }
