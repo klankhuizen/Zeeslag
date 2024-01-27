@@ -103,7 +103,7 @@ public class ZeeslagAIPlayer implements IPlayer{
     IBoard _board;
     @Override
     public void doMove() {
-        if (_isPlacingShips){
+        if (_isPlacingShips && Framework.GetCurrentGame().getIsNetworked()){
             while (!_ships.isEmpty()) {
                 Ship ship = _ships.get(0);
                 _ships.remove(0);
@@ -128,11 +128,33 @@ public class ZeeslagAIPlayer implements IPlayer{
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        if (Framework.GetCurrentGame().getIsNetworked()){
+            try {
+                String[] response = Framework.sendNetworkMessage(new DoMoveCommand(getNewShotLocation()));
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
 
-        try {
-            String[] response = Framework.sendNetworkMessage(new DoMoveCommand(getNewShotLocation()));
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            int loc = getNewShotLocation();
+
+            int x = loc % _board.getWidth();
+            int y = Math.floorDiv(loc, _board.getWidth());
+
+            IPlayer otherPlayer = Framework.GetCurrentGame().getPlayerOne() == this ? Framework.GetCurrentGame().getPlayerTwo() : Framework.GetCurrentGame().getPlayerOne();
+            IBoard board = otherPlayer.getBoard();
+            if (!board.isValidPosition(x, y)) {
+                return ;
+            }
+
+            // Controleer of er een schip op de opgegeven positie is
+            if (board.getValue(x, y) == Zeeslag.FieldValues.SHIP.getValue()) {
+                board.setValue(x, y, Zeeslag.FieldValues.HIT.getValue()); // Markeer het getroffen schip
+                return;
+            } else if (board.getValue(x, y) == Zeeslag.FieldValues.EMPTY.getValue()) {
+                board.setValue(x, y, Zeeslag.FieldValues.MISS.getValue()); // Markeer de gemiste schoten
+            }
+
         }
     }
 
@@ -159,6 +181,11 @@ public class ZeeslagAIPlayer implements IPlayer{
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public void setNextMove(int x, int y) {
+
     }
 
 

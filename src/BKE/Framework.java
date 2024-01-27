@@ -91,13 +91,13 @@ public final class Framework {
         _gameThread.start();
         CreateGraphicalUI();
 
-        try {
-            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
+//        } catch (IOException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
 
-//        CreateConsoleUI();
+        CreateConsoleUI();
         return _gameThread;
     }
 

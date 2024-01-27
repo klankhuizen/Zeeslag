@@ -62,13 +62,16 @@ public class Zeeslag implements IGame {
             plaatsSchepen(_playerTwoBoard);
 
             _nextTurn = _playerOne.getName();
+            IPlayer nextPlayer;
             // Spelronde
             while (!isGameOver()) {
 
-                IPlayer nextPlayer = _nextTurn.equals(_playerOne.getName()) ? _playerOne : _playerTwo;
+                nextPlayer = _nextTurn.equals(_playerOne.getName()) ? _playerOne : _playerTwo;
 
                 nextPlayer.doMove();
                 Framework.UpdateUI(_playerOne, _playerTwo);
+
+                _nextTurn = nextPlayer == _playerOne ? _playerTwo.getName() : _playerOne.getName();
 
                 // Controleer of het spel voorbij is
                 if (isGameOver()) {
@@ -110,12 +113,14 @@ public class Zeeslag implements IGame {
         // Hier komt the user-input binnen
 
         // ongeldige input negeren
-        if (!_playerOneTurn || input == null || input.isEmpty()) return;
+        if (_nextTurn != _playerOne.getName() || input == null || input.isEmpty()) return;
 
         if (input.length() != 2) return;
 
         _rowSelection = Integer.parseInt(String.valueOf(input.charAt(0)));
         _columnSelection = input.charAt(1) - 'A';
+
+        _playerOne.setNextMove(_columnSelection, _rowSelection);
     }
 
     @Override
@@ -202,7 +207,6 @@ public class Zeeslag implements IGame {
         // Dit doet de speler door het nummer en de letter
         // van de bij behorende row en col aan te geven
         _playerOneTurn = true;
-
         _columnSelection = -1;
         _rowSelection = 0;
 

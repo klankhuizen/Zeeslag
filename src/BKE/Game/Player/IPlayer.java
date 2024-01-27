@@ -14,4 +14,5 @@ public interface IPlayer {
 
     boolean isRemote();
 
+    void setNextMove(int x, int y);
 }
