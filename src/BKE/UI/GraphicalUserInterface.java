@@ -122,11 +122,16 @@ public class GraphicalUserInterface implements IUserInterface {
 //            _playerOnePane.showShips(!playerOne.isRemote());
 //            _playerTwoPane.showShips(!playerTwo.isRemote());
 
-            _playerOnePane.UpdateField(playerOne.getBoard().getValues());
-            _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
+            if (_playerOnePane != null ){
+                _playerOnePane.UpdateField(playerOne.getBoard().getValues());
+                _playerOneName.setText(playerOne.getName());
+            }
 
-            _playerOneName.setText(playerOne.getName());
-            _playerTwoName.setText(playerTwo.getName());
+            if (_playerTwoPane != null){
+                _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
+                _playerTwoName.setText(playerTwo.getName());
+            }
+
         });
     }
 

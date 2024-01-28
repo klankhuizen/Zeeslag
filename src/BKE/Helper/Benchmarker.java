@@ -1,6 +1,7 @@
 package BKE.Helper;
 
 import BKE.ApplicationState;
+import BKE.Game.AI.BootZinkerinatorAI;
 import BKE.Game.Player.IPlayer;
 import BKE.Game.Player.NetworkPlayer;
 import BKE.Game.Player.ZeeslagAIPlayer;
@@ -28,7 +29,7 @@ public class Benchmarker {
                 FileWriter fw = new FileWriter("benchmark-" + System.currentTimeMillis() + ".csv", true);
                 BufferedWriter bw = new BufferedWriter(fw);
 
-                bw.write("PLAYERONE,PLAYERTWO,TURNS,WINNER,PLAYERONEHITS,PLAYERTWOHITS,PLAYERONEMISSES,PLAYERTWOMISSES");
+                bw.write("PLAYERONE,PLAYERTWO,TURNS,WINNER,PLAYERONEHITS,PLAYERTWOHITS,PLAYERONEMISSES,PLAYERTWOMISSES,PLAYERONETIME, PLAYERTWOTIME");
                 bw.newLine();
                 bw.flush();
                 long statcount = 0;
@@ -44,6 +45,8 @@ public class Benchmarker {
                         sb.append(stat.playerTwoHits).append(",");
                         sb.append(stat.playerOneMisses).append(",");
                         sb.append(stat.playerTwoMisses).append(",");
+                        sb.append(stat.playerOneTotalTurnTime).append(",");
+                        sb.append(stat.playerTwoTotalTurnTime);
 
                         bw.write(sb.toString());
                         bw.newLine();
@@ -83,7 +86,7 @@ public class Benchmarker {
             Thread t = new Thread(() -> {
                 while (_benchmarksRunning) {
                     Zeeslag z = new Zeeslag();
-                    z.initialize(new ZeeslagAIPlayer("AI1",z), new ZeeslagAIPlayer("AI2",z), false);
+                    z.initialize(new BootZinkerinatorAI("BOOTZINKERINATOR",z), new ZeeslagAIPlayer("RANDOM",z), false);
                     IPlayer playerStarting = Math.random() > 0.5 ? z.getPlayerOne() : z.getPlayerTwo();
                     z.start(playerStarting.getName());
                     while(z.GetState() == ApplicationState.RUNNING){

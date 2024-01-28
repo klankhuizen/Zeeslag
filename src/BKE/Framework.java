@@ -124,7 +124,7 @@ public final class Framework {
 //            throw new RuntimeException(e);
 //        }
 
-        CreateConsoleUI();
+//        CreateConsoleUI();
         return _gameThread;
     }
 

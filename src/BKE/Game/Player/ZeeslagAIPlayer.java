@@ -106,7 +106,7 @@ public class ZeeslagAIPlayer implements IPlayer{
     @Override
     public void doMove() {
         long time = System.currentTimeMillis();
-        if (_isPlacingShips && Framework.GetCurrentGame().getIsNetworked()){
+        if (_isPlacingShips && Framework.isNetworked()){
             while (!_ships.isEmpty()) {
                 Ship ship = _ships.get(0);
                 _ships.remove(0);

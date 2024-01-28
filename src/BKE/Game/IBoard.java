@@ -12,6 +12,8 @@ public interface IBoard {
      */
     public boolean isValidPosition(int row, int col);
 
+    public boolean isValidPosition(int pos);
+
     /**
      * Gets the current value on coordinates as string
      * @param x X coordinate

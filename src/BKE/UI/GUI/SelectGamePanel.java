@@ -1,6 +1,7 @@
 package BKE.UI.GUI;
 
 import BKE.Framework;
+import BKE.Game.AI.BootZinkerinatorAI;
 import BKE.Game.IGame;
 import BKE.Game.Player.HumanPlayer;
 import BKE.Game.Player.IPlayer;
@@ -42,8 +43,7 @@ public class SelectGamePanel extends JDialog {
             try {
                 Framework.UnloadCurrentGame();
                 try {
-
-                    IPlayer playerOne = new HumanPlayer("Hooman");
+                    IPlayer playerOne = new BootZinkerinatorAI("BOOTZINKERINATOR");
                     IPlayer playerTwo = new ZeeslagAIPlayer("COMPOOTER");
 
                     Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), playerOne, playerTwo, playerOne.getName(), false);
