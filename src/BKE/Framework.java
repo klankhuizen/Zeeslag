@@ -124,7 +124,7 @@ public final class Framework {
 //            throw new RuntimeException(e);
 //        }
 
-//        CreateConsoleUI();
+        CreateConsoleUI();
         return _gameThread;
     }
 
@@ -148,6 +148,10 @@ public final class Framework {
         if (_currentGame == null) throw new RuntimeException("Could not load game");
 
         _currentGame.initialize(playerOne, playerTwo, networked);
+
+        playerOne.setGame(_currentGame);
+        playerTwo.setGame(_currentGame);
+
         _currentGame.start(playerStarting);
 
         if (isRunningBenchmarks()) return;

@@ -14,5 +14,7 @@ public interface IPlayer {
     IBoard getBoard();
 
     boolean isRemote();
+
+    void setNextMove(int x, int y);
     void setGame(IGame game);
 }

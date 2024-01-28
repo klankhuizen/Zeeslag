@@ -41,6 +41,11 @@ public class NetworkPlayer implements IPlayer{
         _game = game;
     }
 
+    @Override
+    public void setNextMove(int x, int y) {
+
+    }
+
     public NetworkPlayer(String username) {
         _userName = username;
     }

@@ -106,7 +106,7 @@ public class ZeeslagAIPlayer implements IPlayer{
     @Override
     public void doMove() {
         long time = System.currentTimeMillis();
-        if (_isPlacingShips){
+        if (_isPlacingShips && Framework.GetCurrentGame().getIsNetworked()){
             while (!_ships.isEmpty()) {
                 Ship ship = _ships.get(0);
                 _ships.remove(0);
@@ -202,6 +202,11 @@ public class ZeeslagAIPlayer implements IPlayer{
     @Override
     public boolean isRemote() {
         return false;
+    }
+
+    @Override
+    public void setNextMove(int x, int y) {
+
     }
 
 

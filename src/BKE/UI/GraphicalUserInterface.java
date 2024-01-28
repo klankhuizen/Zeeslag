@@ -2,6 +2,7 @@ package BKE.UI;
 
 import BKE.Framework;
 import BKE.Game.IBoard;
+import BKE.Game.Player.HumanPlayer;
 import BKE.Game.Player.IPlayer;
 import BKE.Network.Message.GameResultMessage;
 import BKE.UI.GUI.BattleShipPanel;
@@ -62,13 +63,18 @@ public class GraphicalUserInterface implements IUserInterface {
             if (Framework.GetCurrentGame() == null) return;
             IBoard playerBoard = Framework.GetCurrentGame().GetPlayerBoard();
             IBoard opponentBoard = Framework.GetCurrentGame().GetOpponentBoard();
+            boolean networked = Framework.GetCurrentGame().getIsNetworked();
 
-            _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), !Framework.GetCurrentGame().getPlayerOne().isRemote(), (x, y) -> {
-                Framework.GetCurrentGame().HandleInput( x+1 + "" + ((char)(y + 'A')) );
+            _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), (networked && !Framework.GetCurrentGame().getPlayerOne().isRemote() || Framework.GetCurrentGame().getPlayerOne() instanceof HumanPlayer), (x, y) -> {
+                if(Framework.GetCurrentGame().getPlayerTwo() instanceof HumanPlayer){
+                    Framework.GetCurrentGame().HandleInput( y  +"" + ((char)(x + 'A')) );
+                }
             });
 
-            _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), !Framework.GetCurrentGame().getPlayerTwo().isRemote(), (x, y) -> {
-                System.out.println("PLAYERTWO " + x + "," + y);
+            _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), (networked && !Framework.GetCurrentGame().getPlayerTwo().isRemote() || Framework.GetCurrentGame().getPlayerTwo() instanceof HumanPlayer), (x, y) -> {
+                if(Framework.GetCurrentGame().getPlayerOne() instanceof HumanPlayer){
+                    Framework.GetCurrentGame().HandleInput( y  +"" + ((char)(x + 'A')) );
+                }
             });
 
             _playerOneName = new JLabel("OPPONENT BOARD");
@@ -87,7 +93,7 @@ public class GraphicalUserInterface implements IUserInterface {
             _frame.getContentPane().add(_playerTwoPane);
             _frame.getContentPane().add(_textScrollPane);
 
-//            Framework.GetCurrentGame().RequestUpdate();
+            Framework.GetCurrentGame().RequestUpdate();
         });
     }
 
