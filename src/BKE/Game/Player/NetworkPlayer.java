@@ -1,6 +1,7 @@
 package BKE.Game.Player;
 
 import BKE.Game.IBoard;
+import BKE.Game.IGame;
 import BKE.Helper.Vector2D;
 
 public class NetworkPlayer implements IPlayer{
@@ -8,6 +9,8 @@ public class NetworkPlayer implements IPlayer{
     String _userName;
 
     IBoard _board;
+
+    IGame _game;
 
     @Override
     public void doMove() {
@@ -31,6 +34,11 @@ public class NetworkPlayer implements IPlayer{
     @Override
     public boolean isRemote() {
         return true;
+    }
+
+    @Override
+    public void setGame(IGame game) {
+        _game = game;
     }
 
     @Override

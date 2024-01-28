@@ -2,6 +2,7 @@ package BKE.Game.Player;
 
 import BKE.Framework;
 import BKE.Game.IBoard;
+import BKE.Game.IGame;
 import BKE.Game.Variants.Ship;
 import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.Vector2D;
@@ -168,5 +169,10 @@ public class HumanPlayer implements IPlayer {
         }
         _shotLocations.add(loc);
         return loc;
+    }
+
+    @Override
+    public void setGame(IGame game) {
+
     }
 }
