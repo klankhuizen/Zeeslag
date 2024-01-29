@@ -33,6 +33,9 @@ public class BootZinkerinatorAI implements IPlayer {
     private int _initialHit;
     private boolean _opposite;
     private boolean _lastWasHit;
+    private final HashSet<Integer> _neighbourFields = new HashSet<>();
+
+    ArrayList<Integer> _streak = new ArrayList<>();
 
     public BootZinkerinatorAI(String name, IGame game) {
         _name = name;
@@ -94,7 +97,12 @@ public class BootZinkerinatorAI implements IPlayer {
             }
 
             if (loc < 0){
-                System.out.println("asasdasd");
+                // Somehow we missed a square. Find it and shoot there.
+                for (int i = 0; i < 64; i++){
+                    if (_shotLocations.contains(i) || _neighbourFields.contains(i)) continue;
+                    loc = i;
+                }
+
             }
 
             int x = loc % _board.getWidth();
@@ -106,10 +114,15 @@ public class BootZinkerinatorAI implements IPlayer {
 
             switch (_phase){
                 case SEARCHING -> {
+                    if (!_streak.isEmpty()){
+                        _streak.clear();
+                    }
+
                     _opposite = false;
                     if (hit){
                         _phase = Phase.LOCKED;
                         _initialHit = loc;
+                        _streak.add(loc);
                     }
                 }
 
@@ -117,6 +130,7 @@ public class BootZinkerinatorAI implements IPlayer {
                     _opposite = false;
                     if (hit){
                         _phase = Phase.SINKING;
+                        _streak.add(loc);
                     } else{
                         _direction = getNextDirection(_direction);
                     }
@@ -129,7 +143,10 @@ public class BootZinkerinatorAI implements IPlayer {
                         } else {
                             _phase = Phase.SEARCHING;
                             _direction = Direction.RIGHT;
+                            maskSurroundingTiles();
                         }
+                    } else{
+                        _streak.add(loc);
                     }
                 }
             }
@@ -164,6 +181,25 @@ public class BootZinkerinatorAI implements IPlayer {
         }
     }
 
+    private void maskSurroundingTiles(){
+        Direction initialDirection = Direction.LEFT;
+        int tiles = _board.getWidth() * _board.getHeight();
+        for (int loc : _streak ) {
+            for (int i = 0; i < 4; i ++){
+                int neighbour = getNewPosFromDirection(loc, initialDirection);
+                if (canHitOnWater(neighbour) && neighbour > 0 && neighbour < tiles){
+                    _neighbourFields.add(neighbour);
+                }
+                initialDirection = getNextDirection(initialDirection);
+            }
+        }
+        _streak.clear();
+    }
+
+    private boolean canHitOnWater(int loc){
+        return !_shotLocations.contains(loc) && !_neighbourFields.contains(loc);
+    }
+
     private int getNewShotLocation(){
         int loc = 0;
         switch (_phase){
@@ -175,17 +211,16 @@ public class BootZinkerinatorAI implements IPlayer {
 
                         // this should never happen because we should have won by now.
                         // throw new RuntimeException("Index Out Of Bounds: Search Pattern out of bounds.");
-                        System.out.println("aaa?");
                         return -1;
                     }
                     loc = _searchPattern[_searchPatternIndex++];
-                } while (_shotLocations.contains(loc));
+                } while (!canHitOnWater(loc));
             }
 
             case LOCKED -> {
                 loc = getNewPosFromDirection(_initialHit, _direction);
                 int count = 1;
-                while (!_board.isValidPosition(loc) || _shotLocations.contains(loc)) {
+                while (!_board.isValidPosition(loc) || !canHitOnWater(loc)) {
                     Direction newDirection = getNextDirection(_direction);
 
                     loc = getNewPosFromDirection(_initialHit, newDirection);
@@ -242,7 +277,7 @@ public class BootZinkerinatorAI implements IPlayer {
 //                    count++;
 //                }
 
-                if (_shotLocations.contains(loc)) {
+                if (!canHitOnWater(loc)) {
                     return -1;
                 }
             }

@@ -61,7 +61,7 @@ public final class Framework {
     }
 
     public static void stopRunningBenchmarks(){
-        _benchmarker.stop();
+        _benchmarker.stop(false);
         _isRunningBenchMarks = false;
     }
 
