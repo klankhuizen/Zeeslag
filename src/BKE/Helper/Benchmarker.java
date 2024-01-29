@@ -98,7 +98,7 @@ public class Benchmarker {
             Thread t = new Thread(() -> {
                 while (_benchmarksRunning) {
                     Zeeslag z = new Zeeslag();
-                    z.initialize(new BootZinkerinatorAI("BOOTZINKERINATOR",z), new ZeeslagAIPlayer("RANDOM",z), false);
+                    z.initialize(new BootZinkerinatorAI("BOOTZINKERINATOR ONE",z), new BootZinkerinatorAI("BOOTZINKERINATOR TWO",z), false);
                     IPlayer playerStarting = Math.random() > 0.5 ? z.getPlayerOne() : z.getPlayerTwo();
                     z.start(playerStarting.getName());
                     while(z.GetState() == ApplicationState.RUNNING){
