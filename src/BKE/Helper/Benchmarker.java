@@ -1,11 +1,13 @@
 package BKE.Helper;
 
 import BKE.ApplicationState;
+import BKE.Game.AI.BootZinkerinatorAI;
 import BKE.Game.Player.IPlayer;
 import BKE.Game.Player.NetworkPlayer;
 import BKE.Game.Player.ZeeslagAIPlayer;
 import BKE.Game.Variants.Zeeslag;
 
+import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Benchmarker {
+    private int results = 0;
 
     ArrayList<Thread> _threads;
     Thread _resultThread;
@@ -28,7 +31,7 @@ public class Benchmarker {
                 FileWriter fw = new FileWriter("benchmark-" + System.currentTimeMillis() + ".csv", true);
                 BufferedWriter bw = new BufferedWriter(fw);
 
-                bw.write("PLAYERONE,PLAYERTWO,TURNS,WINNER,PLAYERONEHITS,PLAYERTWOHITS,PLAYERONEMISSES,PLAYERTWOMISSES");
+                bw.write("PLAYERONE,PLAYERTWO,TURNS,WINNER,PLAYERONEHITS,PLAYERTWOHITS,PLAYERONEMISSES,PLAYERTWOMISSES,PLAYERONETIME, PLAYERTWOTIME");
                 bw.newLine();
                 bw.flush();
                 long statcount = 0;
@@ -44,13 +47,25 @@ public class Benchmarker {
                         sb.append(stat.playerTwoHits).append(",");
                         sb.append(stat.playerOneMisses).append(",");
                         sb.append(stat.playerTwoMisses).append(",");
+                        sb.append(stat.playerOneTotalTurnTime).append(",");
+                        sb.append(stat.playerTwoTotalTurnTime);
 
                         bw.write(sb.toString());
                         bw.newLine();
-                        if (statcount % 10 == 0){
+                        if (statcount % 1000 == 0){
                             bw.flush();
                         }
                         statcount ++;
+                    }
+
+                    if (statcount >= 100000) {
+                        System.out.println("DONE");
+                        bw.flush();
+                        bw.close();
+                        fw.close();
+                        _benchmarksRunning = false;
+                        stop(true);
+                        return;
                     }
                 }
                 bw.flush();
@@ -83,7 +98,7 @@ public class Benchmarker {
             Thread t = new Thread(() -> {
                 while (_benchmarksRunning) {
                     Zeeslag z = new Zeeslag();
-                    z.initialize(new ZeeslagAIPlayer("AI1",z), new ZeeslagAIPlayer("AI2",z), false);
+                    z.initialize(new BootZinkerinatorAI("BOOTZINKERINATOR ONE",z), new BootZinkerinatorAI("BOOTZINKERINATOR TWO",z), false);
                     IPlayer playerStarting = Math.random() > 0.5 ? z.getPlayerOne() : z.getPlayerTwo();
                     z.start(playerStarting.getName());
                     while(z.GetState() == ApplicationState.RUNNING){
@@ -106,18 +121,22 @@ public class Benchmarker {
         }
     }
 
-    public void stop(){
+    public void stop(boolean force){
         _benchmarksRunning = false;
         for (int i = 0; i < _threads.size(); i++) {
             try {
-                _threads.get(i).join(1000);
+                if (force){
+                    _threads.get(i).interrupt();
+                } else {
+                    _threads.get(i).join(1000);
+                }
             } catch (InterruptedException e) {
                 kill(_threads.get(i));
                 throw new RuntimeException(e);
             }
         }
         try {
-            _resultThread.join();
+            _resultThread.join(10000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

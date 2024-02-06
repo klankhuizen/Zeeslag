@@ -8,6 +8,7 @@ import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.Vector2D;
 import BKE.Network.Command.DoMoveCommand;
 import BKE.Network.Command.PlaceCommand;
+import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -173,6 +174,11 @@ public class HumanPlayer implements IPlayer {
 
     @Override
     public void setGame(IGame game) {
+
+    }
+
+    @Override
+    public void setMoveResult(MoveMessage msg) {
 
     }
 }

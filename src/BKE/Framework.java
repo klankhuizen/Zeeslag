@@ -61,7 +61,7 @@ public final class Framework {
     }
 
     public static void stopRunningBenchmarks(){
-        _benchmarker.stop();
+        _benchmarker.stop(false);
         _isRunningBenchMarks = false;
     }
 
@@ -98,7 +98,6 @@ public final class Framework {
         _gameThread = new Thread(() -> {
             while (_isRunning){
                 try {
-
                     if (_currentGame != null){
                         if (_currentGame.GetState() == ApplicationState.ERROR || _currentGame.GetState() == ApplicationState.HALTED){
 
@@ -124,7 +123,7 @@ public final class Framework {
 //            throw new RuntimeException(e);
 //        }
 
-        CreateConsoleUI();
+//        CreateConsoleUI();
         return _gameThread;
     }
 

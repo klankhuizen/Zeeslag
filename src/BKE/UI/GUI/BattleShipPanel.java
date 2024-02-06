@@ -66,6 +66,8 @@ public class BattleShipPanel extends JPanel implements Closeable {
         _colorMap.put(0, new Color(255, 255, 255)); // WHITE
         _colorMap.put(1, new Color(255, 25, 25)); // RED
         _colorMap.put(2, new Color(100, 150, 255)); // BLUE
+        _colorMap.put(4, new Color(255, 25, 25)); // RED
+        _colorMap.put(5, new Color(148, 243, 138)); // MINT
 
         if (numHorizontal < 1 || numVertical < 1){
             throw new IllegalArgumentException("Min size of grid is 1x1");

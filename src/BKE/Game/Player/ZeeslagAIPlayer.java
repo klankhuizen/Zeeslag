@@ -8,6 +8,7 @@ import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.Vector2D;
 import BKE.Network.Command.DoMoveCommand;
 import BKE.Network.Command.PlaceCommand;
+import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
 import java.util.*;
@@ -106,7 +107,7 @@ public class ZeeslagAIPlayer implements IPlayer{
     @Override
     public void doMove() {
         long time = System.currentTimeMillis();
-        if (_isPlacingShips && Framework.GetCurrentGame().getIsNetworked()){
+        if (_isPlacingShips && Framework.isNetworked()){
             while (!_ships.isEmpty()) {
                 Ship ship = _ships.get(0);
                 _ships.remove(0);
@@ -225,5 +226,10 @@ public class ZeeslagAIPlayer implements IPlayer{
 
     public void setGame(IGame game){
         _game = (Zeeslag) game;
+    }
+
+    @Override
+    public void setMoveResult(MoveMessage msg) {
+
     }
 }
