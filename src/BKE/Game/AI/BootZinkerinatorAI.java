@@ -245,6 +245,16 @@ public class BootZinkerinatorAI implements IPlayer {
                     Direction newDirection = getNextDirection(_direction);
 
                     loc = getNewPosFromDirection(_initialHit, newDirection);
+                    int attempts = 0;
+                    while (!canHitOnWater(loc)){
+                        if (attempts > 2){
+                            _searchPatternIndex ++;
+                            return -1;
+                        }
+                        newDirection = getNextDirection(newDirection);
+                        loc = getNewPosFromDirection(_initialHit, newDirection );
+                        attempts ++ ;
+                    }
                     _direction = newDirection;
                     if (count % 4 == 0) {
                         // Gone full circle
