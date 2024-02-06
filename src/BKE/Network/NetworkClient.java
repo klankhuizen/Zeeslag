@@ -1,6 +1,9 @@
 package BKE.Network;
 
 import BKE.Framework;
+import BKE.Game.AI.BootZinkerinatorAI;
+import BKE.Game.IBoard;
+import BKE.Game.IGame;
 import BKE.Game.Player.IPlayer;
 import BKE.Game.Player.NetworkPlayer;
 import BKE.Game.Player.ZeeslagAIPlayer;
@@ -322,32 +325,37 @@ public class NetworkClient implements INetworkClient {
 
     private void handleMessageFromGame(String[] args){
 
+        IGame game = Framework.GetCurrentGame();
         switch (args[2]){
             case "MATCH":
                 startNetworkedGame(args);
                 break;
             case "YOURTURN":
-                Framework.GetCurrentGame().doTurn(_userName);
+                if (game == null) return;
+                game.doTurn(_userName);
                 break;
             case "MOVE":{
+                if (game == null) return;
                 Map<String, String> mapped = ServerDataDecoder.DecodeMap(args);
                 MoveMessage msg = new MoveMessage(Integer.parseInt(mapped.get("MOVE")), mapped.get("PLAYER"), mapped.get("RESULT"));
-                Framework.GetCurrentGame().move(msg);
+                IPlayer player = game.getPlayer(msg.getPlayerName());
+                player.setMoveResult(msg);
+                game.move(msg);
                 break;
             }
-
             case "CHALLENGE":
                 System.out.println("Received a challenge");
                 break;
             case "WIN":
             case "LOSS":
             case "DRAW":{
+                if (game == null) return;
                 Map<String, String> mapped = ServerDataDecoder.DecodeMap(args);
                 GameResultMessage gsm = new GameResultMessage(Integer.parseInt(mapped.get("PLAYERONESCORE")), Integer.parseInt(mapped.get("PLAYERTWOSCORE")), mapped.get("COMMENT"));
-                Framework.GetCurrentGame().setGameResult(gsm);
+                game.setGameResult(gsm);
 
-                IPlayer playerOne = Framework.GetCurrentGame().getPlayerOne();
-                IPlayer playerTwo = Framework.GetCurrentGame().getPlayerTwo();
+                IPlayer playerOne = game.getPlayerOne();
+                IPlayer playerTwo = game.getPlayerTwo();
 
                 String message;
                 if (gsm.getPlayerOneScore() == 1){
@@ -391,7 +399,7 @@ public class NetworkClient implements INetworkClient {
                 String playerStarting = data.get("PLAYERTOMOVE");
                 String opponent = data.get("OPPONENT");
 
-                _game = new NetworkedGame(new ZeeslagAIPlayer(_userName), new NetworkPlayer(opponent), gameName);
+                _game = new NetworkedGame(new BootZinkerinatorAI(_userName), new NetworkPlayer(opponent), gameName);
 
                 IPlayer playerOne, playerTwo;
 

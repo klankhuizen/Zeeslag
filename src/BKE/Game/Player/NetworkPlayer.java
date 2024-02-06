@@ -3,6 +3,7 @@ package BKE.Game.Player;
 import BKE.Game.IBoard;
 import BKE.Game.IGame;
 import BKE.Helper.Vector2D;
+import BKE.Network.Message.MoveMessage;
 
 public class NetworkPlayer implements IPlayer{
 
@@ -39,6 +40,11 @@ public class NetworkPlayer implements IPlayer{
     @Override
     public void setGame(IGame game) {
         _game = game;
+    }
+
+    @Override
+    public void setMoveResult(MoveMessage msg) {
+
     }
 
     @Override

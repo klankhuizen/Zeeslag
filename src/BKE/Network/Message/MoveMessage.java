@@ -12,6 +12,8 @@ public class MoveMessage {
         _playerName = playerName;
         switch (data){
             case "GEZONKEN":
+                _value = Zeeslag.FieldValues.GEZONKEN;
+                break;
             case "BOEM":
                 _value = Zeeslag.FieldValues.HIT;
                 break;

@@ -39,6 +39,15 @@ public class Board implements IBoard {
     }
 
     @Override
+    public boolean isValidPosition(int pos) {
+
+        int x = pos % _width;
+        int y = Math.floorDiv(pos, _width);
+        return isValidPosition(x, y);
+
+    }
+
+    @Override
     public int[][] getValues() {
         return board.clone(); // Clone because we don't want them to be able to alter the board
     }

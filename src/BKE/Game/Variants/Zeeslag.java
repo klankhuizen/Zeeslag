@@ -41,7 +41,7 @@ public class Zeeslag implements IGame {
 
     public enum FieldValues {
         // This is some bullshit, Java!
-        EMPTY(0), HIT(1), MISS(2), SHIP(3);
+        EMPTY(0), HIT(1), MISS(2), SHIP(3), GEZONKEN(4), MASKED(5);
         private final int value;
         private FieldValues(int val){
             this.value = val;
@@ -449,7 +449,10 @@ public class Zeeslag implements IGame {
     public boolean schiet(IBoard board, int row, int col) {
         // Controleer of de zet binnen het bord valt
         if (!board.isValidPosition(row, col)) {
-//            System.out.println("Ongeldige positie. Probeer opnieuw.");
+
+            System.out.println(row + " -> " + col);
+
+            System.out.println("Ongeldige positie. Probeer opnieuw.");
             return false;
         }
 
@@ -466,7 +469,7 @@ public class Zeeslag implements IGame {
             board.setValue(row, col, Zeeslag.FieldValues.MISS.getValue()); // Markeer de gemiste schoten
 //            System.out.println("Helaas, je hebt gemist op positie " + board.locatie(row, col));
         } else {
-//            System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
+            System.out.println("Je hebt hier al geschoten. Probeer een andere positie.");
         }
         return false;
     }

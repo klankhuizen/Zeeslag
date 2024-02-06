@@ -66,19 +66,21 @@ public class GraphicalUserInterface implements IUserInterface {
             boolean networked = Framework.GetCurrentGame().getIsNetworked();
 
             _playerOnePane = new BattleShipPanel(playerBoard.getHeight(), playerBoard.getWidth(), (networked && !Framework.GetCurrentGame().getPlayerOne().isRemote() || Framework.GetCurrentGame().getPlayerOne() instanceof HumanPlayer), (x, y) -> {
+                if (Framework.GetCurrentGame() == null) return;
                 if(Framework.GetCurrentGame().getPlayerTwo() instanceof HumanPlayer){
                     Framework.GetCurrentGame().HandleInput( y  +"" + ((char)(x + 'A')) );
                 }
             });
 
             _playerTwoPane = new BattleShipPanel(opponentBoard.getHeight(), opponentBoard.getWidth(), (networked && !Framework.GetCurrentGame().getPlayerTwo().isRemote() || Framework.GetCurrentGame().getPlayerTwo() instanceof HumanPlayer), (x, y) -> {
+                if (Framework.GetCurrentGame() == null) return;
                 if(Framework.GetCurrentGame().getPlayerOne() instanceof HumanPlayer){
                     Framework.GetCurrentGame().HandleInput( y  +"" + ((char)(x + 'A')) );
                 }
             });
 
             _playerOneName = new JLabel("OPPONENT BOARD");
-            _playerTwoName = new JLabel("PLAYER BOARD");
+            _playerTwoName = new JLabel("OUR BOARD");
 
             _textArea = new JTextArea(1,16);
             JScrollPane _textScrollPane  = new JScrollPane(_textArea);
@@ -119,14 +121,32 @@ public class GraphicalUserInterface implements IUserInterface {
      */
     public void UpdateFields(IPlayer playerOne, IPlayer playerTwo){
         SwingUtilities.invokeLater(() -> {
-//            _playerOnePane.showShips(!playerOne.isRemote());
-//            _playerTwoPane.showShips(!playerTwo.isRemote());
+            String playerOneName = playerOne.getName();
+            String playerTwoName = playerTwo.getName();
 
-            _playerOnePane.UpdateField(playerOne.getBoard().getValues());
-            _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
+            if (playerOne.isRemote()){
+                playerOneName += " (OPPONENT)";
+            } else {
+                playerOneName += " (LOCAL)";
+            }
 
-            _playerOneName.setText(playerOne.getName());
-            _playerTwoName.setText(playerTwo.getName());
+            if (playerTwo.isRemote()){
+                playerTwoName += " (OPPONENT)";
+            } else {
+                playerTwoName += " (LOCAL)";
+            }
+
+
+            if (_playerOnePane != null ){
+                _playerOnePane.UpdateField(playerOne.getBoard().getValues());
+                _playerOneName.setText(playerOneName);
+            }
+
+            if (_playerTwoPane != null){
+                _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
+                _playerTwoName.setText(playerTwoName);
+            }
+
         });
     }
 
