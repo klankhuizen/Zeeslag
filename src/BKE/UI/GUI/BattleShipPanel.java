@@ -78,7 +78,7 @@ public class BattleShipPanel extends JPanel implements Closeable {
         _callback = callback;
         _showShips = showShips;
 
-        if (!_showShips){
+        if (_showShips){
             _colorMap.put(0, new Color(146, 146, 146));
         }
 
