@@ -78,7 +78,7 @@ public class GraphicalUserInterface implements IUserInterface {
             });
 
             _playerOneName = new JLabel("OPPONENT BOARD");
-            _playerTwoName = new JLabel("PLAYER BOARD");
+            _playerTwoName = new JLabel("OUR BOARD");
 
             _textArea = new JTextArea(1,16);
             JScrollPane _textScrollPane  = new JScrollPane(_textArea);
@@ -119,17 +119,30 @@ public class GraphicalUserInterface implements IUserInterface {
      */
     public void UpdateFields(IPlayer playerOne, IPlayer playerTwo){
         SwingUtilities.invokeLater(() -> {
-//            _playerOnePane.showShips(!playerOne.isRemote());
-//            _playerTwoPane.showShips(!playerTwo.isRemote());
+            String playerOneName = playerOne.getName();
+            String playerTwoName = playerTwo.getName();
+
+            if (playerOne.isRemote()){
+                playerOneName += " (OPPONENT)";
+            } else {
+                playerOneName += " (LOCAL)";
+            }
+
+            if (playerTwo.isRemote()){
+                playerTwoName += " (OPPONENT)";
+            } else {
+                playerTwoName += " (LOCAL)";
+            }
+
 
             if (_playerOnePane != null ){
                 _playerOnePane.UpdateField(playerOne.getBoard().getValues());
-                _playerOneName.setText(playerOne.getName());
+                _playerOneName.setText(playerOneName);
             }
 
             if (_playerTwoPane != null){
                 _playerTwoPane.UpdateField(playerTwo.getBoard().getValues());
-                _playerTwoName.setText(playerTwo.getName());
+                _playerTwoName.setText(playerTwoName);
             }
 
         });

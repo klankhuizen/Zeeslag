@@ -8,6 +8,7 @@ import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.Vector2D;
 import BKE.Network.Command.DoMoveCommand;
 import BKE.Network.Command.PlaceCommand;
+import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
 import java.util.*;
@@ -225,5 +226,10 @@ public class ZeeslagAIPlayer implements IPlayer{
 
     public void setGame(IGame game){
         _game = (Zeeslag) game;
+    }
+
+    @Override
+    public void setMoveResult(MoveMessage msg) {
+
     }
 }

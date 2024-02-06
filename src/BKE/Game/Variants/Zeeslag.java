@@ -41,7 +41,7 @@ public class Zeeslag implements IGame {
 
     public enum FieldValues {
         // This is some bullshit, Java!
-        EMPTY(0), HIT(1), MISS(2), SHIP(3);
+        EMPTY(0), HIT(1), MISS(2), SHIP(3), GEZONKEN(4), MASKED(5);
         private final int value;
         private FieldValues(int val){
             this.value = val;

@@ -98,7 +98,6 @@ public final class Framework {
         _gameThread = new Thread(() -> {
             while (_isRunning){
                 try {
-
                     if (_currentGame != null){
                         if (_currentGame.GetState() == ApplicationState.ERROR || _currentGame.GetState() == ApplicationState.HALTED){
 
@@ -118,11 +117,11 @@ public final class Framework {
         _gameThread.start();
         CreateGraphicalUI();
 
-//        try {
-//            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
-//        } catch (IOException | InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            StartNetwork("127.0.0.1", 7789, "s" + System.currentTimeMillis());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
 //        CreateConsoleUI();
         return _gameThread;

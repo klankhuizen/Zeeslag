@@ -9,9 +9,11 @@ import BKE.Game.Variants.Zeeslag;
 import BKE.Helper.Vector2D;
 import BKE.Network.Command.DoMoveCommand;
 import BKE.Network.Command.PlaceCommand;
+import BKE.Network.Message.MoveMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -26,7 +28,7 @@ public class BootZinkerinatorAI implements IPlayer {
     private HashSet<Integer> _shotLocations = new HashSet<>();
     private int[] _offsets = new int[4];
     private int _lastShot;
-    private final int[] _searchPattern = {27, 20, 37, 44, 34, 29, 51, 41, 17, 10, 13, 54, 24, 3, 23, 47, 61, 58, 49, 14, 39, 60, 32, 4, 9, 15, 57, 8, 2, 6, 63, 56, 53, 46, 30, 42, 43, 0, 11, 19, 25, 36, 40, 21, 1, 5, 7, 16, 18, 22, 26, 28, 31, 33, 35, 38, 48, 50, 52, 55, 59, 62, 12, 45 };
+    private final int[] _searchPattern = {27, 20, 37, 44, 34, 29, 51, 41, 17, 10, 13, 54, 24, 3, 23, 47, 61, 58, 49, 14, 39, 60, 32, 4, 9, 15, 57, 8, 2, 6, 63, 56, 53, 46, 30, 42, 43, 0, 11, 19, 25, 36, 40, 21, 1, 5, 7, 16, 18, 22, 26, 28, 31, 33, 35, 38, 48, 50, 52, 55, 59, 62, 12, 45};
     private int _searchPatternIndex = 0;
     private Phase _phase = Phase.SEARCHING;
     private Direction _direction = Direction.RIGHT;
@@ -35,22 +37,28 @@ public class BootZinkerinatorAI implements IPlayer {
     private boolean _lastWasHit;
     private final HashSet<Integer> _neighbourFields = new HashSet<>();
 
+    private static final int[] SHIPSIZES = {2, 3, 4, 6};
+
+    Random _random;
+
     ArrayList<Integer> _streak = new ArrayList<>();
 
     public BootZinkerinatorAI(String name, IGame game) {
         _name = name;
         _game = (Zeeslag) game;
+        _random = new Random();
     }
 
     public BootZinkerinatorAI(String userName) {
         _name = userName;
+        _random = new Random();
     }
 
-    private enum Direction{
+    private enum Direction {
         LEFT, RIGHT, UP, DOWN
     }
 
-    private enum Phase{
+    private enum Phase {
         SEARCHING,
         LOCKED,
         SINKING
@@ -59,14 +67,14 @@ public class BootZinkerinatorAI implements IPlayer {
     @Override
     public void doMove() {
         long time = System.currentTimeMillis();
-        if (_isPlacingShips){
+        if (_isPlacingShips) {
             placeShips();
             return;
         }
 
         boolean isPlayerOne = _game.getPlayerOne() == this;
 
-        if (!Framework.isRunningBenchmarks()){
+        if (!Framework.isRunningBenchmarks()) {
             try {
                 Thread.sleep(100); // spam prot
             } catch (InterruptedException e) {
@@ -81,99 +89,53 @@ public class BootZinkerinatorAI implements IPlayer {
 //                //
 //            }
 //        }
+        int loc = getNewShotLocation();
+        if (loc == -1) {
+            _phase = Phase.SEARCHING;
+            loc = getNewShotLocation();
+        }
 
+        if (loc < 0) {
+            // Somehow we missed a square. Find it and shoot there.
+            for (int i = 0; i < 64; i++) {
+                if (_shotLocations.contains(i) || _neighbourFields.contains(i)) continue;
+                loc = i;
+            }
 
-        if (Framework.isNetworked()){
+        }
+
+        if (Framework.isNetworked()) {
             try {
-                String[] response = Framework.sendNetworkMessage(new DoMoveCommand(getNewShotLocation()));
+                String[] response = Framework.sendNetworkMessage(new DoMoveCommand(loc));
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            int loc = getNewShotLocation();
-            if (loc == -1){
-                _phase = Phase.SEARCHING;
-                loc = getNewShotLocation();
-            }
-
-            if (loc < 0){
-                // Somehow we missed a square. Find it and shoot there.
-                for (int i = 0; i < 64; i++){
-                    if (_shotLocations.contains(i) || _neighbourFields.contains(i)) continue;
-                    loc = i;
-                }
-
-            }
-
             int x = loc % _board.getWidth();
             int y = Math.floorDiv(loc, _board.getWidth());
             boolean hit = _game.schiet(isPlayerOne ? _game.getPlayerTwo().getBoard() : _game.getPlayerOne().getBoard(), x, y);
-            _shotLocations.add(loc);
-            _lastShot = loc;
-            _lastWasHit = hit;
-
-            switch (_phase){
-                case SEARCHING -> {
-                    if (!_streak.isEmpty()){
-                        _streak.clear();
-                    }
-
-                    _opposite = false;
-                    if (hit){
-                        _phase = Phase.LOCKED;
-                        _initialHit = loc;
-                        _streak.add(loc);
-                    }
-                }
-
-                case LOCKED -> {
-                    _opposite = false;
-                    if (hit){
-                        _phase = Phase.SINKING;
-                        _streak.add(loc);
-                    } else{
-                        _direction = getNextDirection(_direction);
-                    }
-                }
-
-                case SINKING -> {
-                    if (!hit) {
-                        if (!_opposite){
-                            _opposite = true;
-                        } else {
-                            _phase = Phase.SEARCHING;
-                            _direction = Direction.RIGHT;
-                            maskSurroundingTiles();
-                        }
-                    } else{
-                        _streak.add(loc);
-                    }
-                }
-            }
-
-
-            if (Framework.isRunningBenchmarks()){
-                if (hit){
-                    if (isPlayerOne){
-                        _game.getMatchStats().playerOneHits ++;
+            processTurnResult(loc, hit ? Zeeslag.FieldValues.HIT : Zeeslag.FieldValues.MISS);
+            if (Framework.isRunningBenchmarks()) {
+                if (hit) {
+                    if (isPlayerOne) {
+                        _game.getMatchStats().playerOneHits++;
 
                     } else {
-                        _game.getMatchStats().playerTwoHits ++;
+                        _game.getMatchStats().playerTwoHits++;
                     }
                 } else {
-                    if (isPlayerOne){
-                        _game.getMatchStats().playerOneMisses ++;
+                    if (isPlayerOne) {
+                        _game.getMatchStats().playerOneMisses++;
 
                     } else {
-                        _game.getMatchStats().playerTwoMisses ++;
+                        _game.getMatchStats().playerTwoMisses++;
                     }
                 }
-
             }
         }
 
-        if (Framework.isRunningBenchmarks()){
-            if (isPlayerOne){
+        if (Framework.isRunningBenchmarks()) {
+            if (isPlayerOne) {
                 _game.getMatchStats().playerOneTotalTurnTime += System.currentTimeMillis() - time;
             } else {
                 _game.getMatchStats().playerTwoTotalTurnTime += System.currentTimeMillis() - time;
@@ -181,14 +143,73 @@ public class BootZinkerinatorAI implements IPlayer {
         }
     }
 
-    private void maskSurroundingTiles(){
+    private void processTurnResult(int loc, Zeeslag.FieldValues result) {
+        _shotLocations.add(loc);
+        _lastShot = loc;
+        _lastWasHit = result == Zeeslag.FieldValues.HIT || result == Zeeslag.FieldValues.GEZONKEN;
+
+        switch (_phase) {
+            case SEARCHING -> {
+                if (!_streak.isEmpty()) {
+                    _streak.clear();
+                }
+
+                _opposite = false;
+                if (_lastWasHit) {
+                    _phase = Phase.LOCKED;
+                    _initialHit = loc;
+                    _streak.add(loc);
+                }
+            }
+
+            case LOCKED -> {
+                _opposite = false;
+                if (_lastWasHit) {
+                    _phase = Phase.SINKING;
+                    _streak.add(loc);
+                } else {
+                    _direction = getNextDirection(_direction);
+                }
+            }
+
+            case SINKING -> {
+
+                if (result == Zeeslag.FieldValues.GEZONKEN) {
+                    _streak.add(loc);
+                    _opposite = false;
+                    _phase = Phase.SEARCHING;
+                    _direction = Direction.RIGHT;
+                    maskSurroundingTiles();
+                } else {
+                    if (!_lastWasHit) {
+                        if (!_opposite) {
+                            _opposite = true;
+                        } else {
+                            _phase = Phase.SEARCHING;
+                            _direction = Direction.RIGHT;
+                            maskSurroundingTiles();
+                        }
+                    } else {
+                        _streak.add(loc);
+                    }
+                }
+            }
+        }
+    }
+
+    private void maskSurroundingTiles() {
         Direction initialDirection = Direction.LEFT;
-        int tiles = _board.getWidth() * _board.getHeight();
-        for (int loc : _streak ) {
-            for (int i = 0; i < 4; i ++){
+        IBoard opponentBoard = _game.getPlayerOne().getName().equals(this._name) ? _game.getPlayerTwo().getBoard() : _game.getPlayerOne().getBoard();
+        int tiles = opponentBoard.getWidth() * opponentBoard.getHeight();
+        for (int loc : _streak) {
+            for (int i = 0; i < 4; i++) {
                 int neighbour = getNewPosFromDirection(loc, initialDirection);
-                if (canHitOnWater(neighbour) && neighbour > 0 && neighbour < tiles){
+                if (canHitOnWater(neighbour) && neighbour > 0 && neighbour < tiles) {
                     _neighbourFields.add(neighbour);
+
+                    int x = neighbour % opponentBoard.getWidth();
+                    int y = Math.floorDiv(neighbour, opponentBoard.getWidth());
+                    opponentBoard.setValue(x, y, Zeeslag.FieldValues.MASKED.getValue());
                 }
                 initialDirection = getNextDirection(initialDirection);
             }
@@ -196,15 +217,15 @@ public class BootZinkerinatorAI implements IPlayer {
         _streak.clear();
     }
 
-    private boolean canHitOnWater(int loc){
+    private boolean canHitOnWater(int loc) {
         return !_shotLocations.contains(loc) && !_neighbourFields.contains(loc);
     }
 
-    private int getNewShotLocation(){
+    private int getNewShotLocation() {
         int loc = 0;
-        switch (_phase){
+        switch (_phase) {
             case SEARCHING -> {
-                int length =_searchPattern.length;
+                int length = _searchPattern.length;
                 do {
                     // Keep searching through it
                     if (_searchPatternIndex > length - 1) {
@@ -225,9 +246,9 @@ public class BootZinkerinatorAI implements IPlayer {
 
                     loc = getNewPosFromDirection(_initialHit, newDirection);
                     _direction = newDirection;
-                    if (count % 4 == 0){
+                    if (count % 4 == 0) {
                         // Gone full circle
-                        _searchPatternIndex ++;
+                        _searchPatternIndex++;
                         return -1;
                     }
                     count++;
@@ -241,12 +262,12 @@ public class BootZinkerinatorAI implements IPlayer {
 //
 //                    }
                 }
-           }
+            }
 
             case SINKING -> {
 
-                if (!_lastWasHit){
-                    if (_opposite){
+                if (!_lastWasHit) {
+                    if (_opposite) {
                         switch (_direction) {
                             case UP -> {
                                 _direction = Direction.DOWN;
@@ -285,7 +306,7 @@ public class BootZinkerinatorAI implements IPlayer {
         return loc;
     }
 
-    private int getNewPosFromDirection(int initialLoc, Direction direction){
+    private int getNewPosFromDirection(int initialLoc, Direction direction) {
         int loc = initialLoc;
         switch (direction) {
             case RIGHT -> {
@@ -296,17 +317,17 @@ public class BootZinkerinatorAI implements IPlayer {
                     loc = -1;
                 }
             }
-            case DOWN ->{
+            case DOWN -> {
                 loc += _board.getWidth();
             }
             case UP -> {
                 loc -= _board.getWidth();
-                if (loc < 0){
+                if (loc < 0) {
                     return -1;
                 }
             }
             case LEFT -> {
-                if (loc % 8 == 0){
+                if (loc % 8 == 0) {
                     loc = -1;
                 } else {
                     loc -= 1;
@@ -348,6 +369,7 @@ public class BootZinkerinatorAI implements IPlayer {
         _offsets[1] = -1 * _board.getWidth();
         _offsets[2] = 1;
         _offsets[3] = _board.getWidth();
+        generateShipPlacements();
     }
 
     @Override
@@ -370,13 +392,20 @@ public class BootZinkerinatorAI implements IPlayer {
         _game = (Zeeslag) game;
     }
 
+    @Override
+    public void setMoveResult(MoveMessage msg) {
+        Zeeslag.FieldValues value = msg.getValue();
+        int location = msg.getLocation();
+        processTurnResult(location, msg.getValue());
+    }
+
     public void placeShips() {
         while (!_ships.isEmpty()) {
             Ship ship = _ships.get(0);
             _ships.remove(0);
             int begin = ship.getNetworkBegin();
 
-            if (Framework.isNetworked()){
+            if (Framework.isNetworked()) {
                 try {
                     int end = ship.getNetworkEnd();
 
@@ -393,17 +422,81 @@ public class BootZinkerinatorAI implements IPlayer {
         }
 
         // Copy the ships over. doesn't really matter which length.
-        for (Ship s: _ships) {
-            _enemyShips.add(new Ship(new Vector2D(0,0), s.isHorizontal(), s.getLength(), _board.getWidth()));
+        for (Ship s : _ships) {
+            _enemyShips.add(new Ship(new Vector2D(0, 0), s.isHorizontal(), s.getLength(), _board.getWidth()));
         }
 
         _isPlacingShips = false;
     }
 
 
-
-    private int maxRemainingSize(){
+    private int maxRemainingSize() {
         if (_enemyShips.isEmpty()) return 0;
         return _enemyShips.stream().max((a, b) -> Math.max(a.getLength(), b.getLength())).get().getLength();
+    }
+
+    private void generateShipPlacements() {
+        // Hier worden de schip sizes gedefineerd
+        // Dit kan eventueel ook later gelinked worden aan namen
+        int totalsquares = Arrays.stream(SHIPSIZES).sum(); // get a sum of all the items in the array.
+        int attempts = 0;
+        boolean valid = false;
+        _ships.clear();
+
+        do {
+            attempts++;
+            int placedSquares = 0;
+            for (int length : SHIPSIZES) {
+                int row, col;
+                boolean horizontal = _random.nextBoolean(); // Random ligging van ship
+                int cycles = 0;
+
+                // Hier checked hij of het ship juist geplaatst wordt
+                do {
+                    row = _random.nextInt(_board.getHeight());
+                    col = _random.nextInt(_board.getWidth());
+                    cycles++;
+                } while (!Zeeslag.isValidPositionForShip(_board, row, col, length, horizontal) && cycles < 100000);
+
+                // Will attempt 100 times... After that, probably impossible...
+                if (cycles > 99) {
+                    // Invalid
+                    break;
+                }
+
+                Zeeslag.plaatsSchipOpBord(_board, row, col, length, horizontal);
+                _ships.add(new Ship(new Vector2D(col, row), horizontal, length, _board.getWidth()));
+
+                placedSquares += length;
+            }
+
+            // The combination is invalid, start over.
+            if (totalsquares != placedSquares) {
+                _ships.clear();
+                _board.clear();
+//                System.out.println("Invalid config, attempt " + attempts);
+                continue;
+            }
+
+
+            valid = true;
+        } while (!valid);
+
+        _board.clear();
+        for (Ship ship : _ships) {
+
+            Vector2D begin = ship.getBegin();
+            Vector2D end = ship.getEnd();
+
+            if (ship.isHorizontal()) {
+                for (int i = 0; i < ship.getLength(); i++) {
+                    _board.setValue(begin.X + i, begin.Y, Zeeslag.FieldValues.SHIP.getValue());
+                }
+            } else {
+                for (int i = 0; i < ship.getLength(); i++) {
+                    _board.setValue(begin.X, begin.Y + i, Zeeslag.FieldValues.SHIP.getValue());
+                }
+            }
+        }
     }
 }
