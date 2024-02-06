@@ -39,9 +39,9 @@ public class BootZinkerinatorAI implements IPlayer {
 
     private static final int[] SHIPSIZES = {2, 3, 4, 6};
 
-    Random _random;
+    private ArrayList<Integer> _lastHits = new ArrayList<Integer>();
 
-    ArrayList<Integer> _streak = new ArrayList<>();
+    Random _random;
 
     public BootZinkerinatorAI(String name, IGame game) {
         _name = name;
@@ -148,38 +148,39 @@ public class BootZinkerinatorAI implements IPlayer {
         _lastShot = loc;
         _lastWasHit = result == Zeeslag.FieldValues.HIT || result == Zeeslag.FieldValues.GEZONKEN;
 
+        if (_lastWasHit){
+            _lastHits.add(loc);
+        }
+
         switch (_phase) {
             case SEARCHING -> {
-                if (!_streak.isEmpty()) {
-                    _streak.clear();
-                }
-
                 _opposite = false;
                 if (_lastWasHit) {
                     _phase = Phase.LOCKED;
                     _initialHit = loc;
-                    _streak.add(loc);
                 }
             }
 
             case LOCKED -> {
                 _opposite = false;
-                if (_lastWasHit) {
+
+                if (result == Zeeslag.FieldValues.GEZONKEN) { // Sometimes there's ships of 2 which will be sunk already.
+                    _phase = Phase.SEARCHING;
+                    _direction = Direction.RIGHT;
+                    commitLastHits();
+                } else if (_lastWasHit) {
                     _phase = Phase.SINKING;
-                    _streak.add(loc);
                 } else {
                     _direction = getNextDirection(_direction);
                 }
             }
 
             case SINKING -> {
-
                 if (result == Zeeslag.FieldValues.GEZONKEN) {
-                    _streak.add(loc);
                     _opposite = false;
                     _phase = Phase.SEARCHING;
                     _direction = Direction.RIGHT;
-                    maskSurroundingTiles();
+                    commitLastHits();
                 } else {
                     if (!_lastWasHit) {
                         if (!_opposite) {
@@ -187,34 +188,36 @@ public class BootZinkerinatorAI implements IPlayer {
                         } else {
                             _phase = Phase.SEARCHING;
                             _direction = Direction.RIGHT;
-                            maskSurroundingTiles();
+                            commitLastHits();
                         }
-                    } else {
-                        _streak.add(loc);
                     }
                 }
             }
         }
     }
 
-    private void maskSurroundingTiles() {
+    private void commitLastHits(){
+        for (int i : _lastHits){
+            maskSurroundingTiles(i);
+        }
+        _lastHits.clear();
+    }
+
+    private void maskSurroundingTiles(int loc) {
         Direction initialDirection = Direction.LEFT;
         IBoard opponentBoard = _game.getPlayerOne().getName().equals(this._name) ? _game.getPlayerTwo().getBoard() : _game.getPlayerOne().getBoard();
         int tiles = opponentBoard.getWidth() * opponentBoard.getHeight();
-        for (int loc : _streak) {
-            for (int i = 0; i < 4; i++) {
-                int neighbour = getNewPosFromDirection(loc, initialDirection);
-                if (canHitOnWater(neighbour) && neighbour > 0 && neighbour < tiles) {
-                    _neighbourFields.add(neighbour);
+        for (int i = 0; i < 4; i++) {
+            int neighbour = getNewPosFromDirection(loc, initialDirection);
+            if (canHitOnWater(neighbour) && neighbour > 0 && neighbour < tiles) {
+                _neighbourFields.add(neighbour);
 
-                    int x = neighbour % opponentBoard.getWidth();
-                    int y = Math.floorDiv(neighbour, opponentBoard.getWidth());
-                    opponentBoard.setValue(x, y, Zeeslag.FieldValues.MASKED.getValue());
-                }
-                initialDirection = getNextDirection(initialDirection);
+                int x = neighbour % opponentBoard.getWidth();
+                int y = Math.floorDiv(neighbour, opponentBoard.getWidth());
+                opponentBoard.setValue(x, y, Zeeslag.FieldValues.MASKED.getValue());
             }
+            initialDirection = getNextDirection(initialDirection);
         }
-        _streak.clear();
     }
 
     private boolean canHitOnWater(int loc) {
