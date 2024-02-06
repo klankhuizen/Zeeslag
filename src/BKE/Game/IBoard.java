@@ -1,5 +1,7 @@
 package BKE.Game;
 
+import BKE.Helper.Vector2D;
+
 public interface IBoard {
 
     /**
@@ -18,13 +20,11 @@ public interface IBoard {
      */
     String locatie(int x, int y);
 
-    boolean schiet(int x, int y);
-
     /**
      * Get the current board
      * @return board
      */
-    int[][] getBoard();
+    int[][] getValues();
 
     /**
      * Get the width of the board
@@ -53,4 +53,11 @@ public interface IBoard {
      * @return int value
      */
     int getValue(int x, int y);
+
+    /**
+     * Resetting the board.
+     */
+    void clear();
+
+    Vector2D getFromNetworked(int loc);
 }

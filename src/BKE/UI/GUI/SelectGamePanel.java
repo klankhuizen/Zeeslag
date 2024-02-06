@@ -2,6 +2,9 @@ package BKE.UI.GUI;
 
 import BKE.Framework;
 import BKE.Game.IGame;
+import BKE.Game.Player.HumanPlayer;
+import BKE.Game.Player.IPlayer;
+import BKE.Game.Player.ZeeslagAIPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,17 +32,21 @@ public class SelectGamePanel extends JDialog {
         JPanel lowerButtons = new JPanel();
 
         JButton startGame = new JButton("Start Game");
-        JButton endGame = new JButton("End Game");
+        JButton cancel = new JButton("Cancel");
 
         lowerButtons.add(startGame);
-        lowerButtons.add(endGame);
+        lowerButtons.add(cancel);
         lowerButtons.setLayout(new BoxLayout(lowerButtons, BoxLayout.X_AXIS));
 
         startGame.addActionListener(l -> {
             try {
                 Framework.UnloadCurrentGame();
                 try {
-                    Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), false);
+
+                    IPlayer playerOne = new HumanPlayer("Hooman");
+                    IPlayer playerTwo = new ZeeslagAIPlayer("COMPOOTER");
+
+                    Framework.LoadGame(availableGames.get(comboBox.getSelectedItem().toString()), playerOne, playerTwo, playerOne.getName(), false);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -51,12 +58,15 @@ public class SelectGamePanel extends JDialog {
             }
         });
 
-        endGame.addActionListener(l -> {
+        cancel.addActionListener(l -> {
 
             try {
                 Framework.UnloadCurrentGame();
             } catch(Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                this.setVisible(false);
+                this.dispose();
             }
 
         });

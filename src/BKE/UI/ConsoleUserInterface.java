@@ -2,8 +2,10 @@ package BKE.UI;
 
 import BKE.ApplicationState;
 import BKE.Framework;
+import BKE.Game.Player.IPlayer;
 import BKE.Game.Variants.TicTacToe;
 import BKE.Game.Variants.Zeeslag;
+import BKE.Network.Message.GameResultMessage;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -34,10 +36,18 @@ public class ConsoleUserInterface implements IUserInterface {
     }
 
     @Override
-    public void UpdateFields(int[][] playerOne, int[][] playerTwo) {
+    public void UpdateFields(IPlayer playerOne, IPlayer playerTwo) {
+        PrintBoard(playerOne.getBoard().getValues(), true);
+        PrintBoard(playerTwo.getBoard().getValues(), false);
+    }
 
-        PrintBoard(playerOne, false);
-        PrintBoard(playerTwo, true);
+    @Override
+    public void SendMessageToUser(String message) {
+        System.out.println(message);
+    }
+
+    @Override
+    public void setWinner(GameResultMessage gsm) {
 
     }
 
@@ -72,6 +82,11 @@ public class ConsoleUserInterface implements IUserInterface {
         }
 
         System.out.println();
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 
     static class StartupChoiceHandler implements Runnable {
@@ -147,20 +162,20 @@ public class ConsoleUserInterface implements IUserInterface {
                 char choice = message.charAt(0);
                 switch (choice){
 
-                    case '1':
-                        Framework.LoadGame(Zeeslag.class, false);
-                        break;
-                    case '2':
-                        Framework.LoadGame(Zeeslag.class, true);
-                        break;
-
-                    case '3':
-                        Framework.LoadGame(TicTacToe.class, false);
-                        break;
-                    case '4':
-                        Framework.LoadGame(TicTacToe.class, true);
-                        break;
-
+//                    case '1':
+//                        Framework.LoadGame(Zeeslag.class, false);
+//                        break;
+//                    case '2':
+//                        Framework.LoadGame(Zeeslag.class, true);
+//                        break;
+//
+//                    case '3':
+//                        Framework.LoadGame(TicTacToe.class, false);
+//                        break;
+//                    case '4':
+//                        Framework.LoadGame(TicTacToe.class, true);
+//                        break;
+//
                     case 'Q':
                     case 'q':
                         scannerState = ApplicationState.HALTED;
